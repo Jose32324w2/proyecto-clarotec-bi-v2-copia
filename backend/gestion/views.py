@@ -542,7 +542,7 @@ class RentabilidadHistoricaAPIView(APIView):
 
     def get(self, request):
         # Filtramos solo pedidos completados (o despachados/pagados si se prefiere, pero completado es el final)
-        pedidos = Pedido.objects.filter(estado='completado').order_by('fecha_actualizacion')
+        pedidos = Pedido.objects.filter(estado='completado').order_by('fecha_despacho')
         
         # --- FILTROS ---
         start_date = request.query_params.get('start_date')
@@ -560,9 +560,9 @@ class RentabilidadHistoricaAPIView(APIView):
             comunas = request.query_params.get('comuna').split(',')
 
         if start_date:
-            pedidos = pedidos.filter(fecha_actualizacion__date__gte=start_date)
+            pedidos = pedidos.filter(fecha_despacho__date__gte=start_date)
         if end_date:
-            pedidos = pedidos.filter(fecha_actualizacion__date__lte=end_date)
+            pedidos = pedidos.filter(fecha_despacho__date__lte=end_date)
         if cliente_id:
             pedidos = pedidos.filter(cliente_id=cliente_id)
         
@@ -594,7 +594,7 @@ class RentabilidadHistoricaAPIView(APIView):
                 
             data.append({
                 'id': p.id,
-                'fecha': p.fecha_actualizacion.strftime('%Y-%m-%d'), # Fecha para el eje X
+                'fecha': p.fecha_despacho.strftime('%Y-%m-%d') if p.fecha_despacho else p.fecha_actualizacion.strftime('%Y-%m-%d'), # Fecha para el eje X (Fallback a actualizacion)
                 'cliente': p.cliente.nombre,
                 'ganancia': float(ganancia), # Decimal a float para JSON
                 'margen': round(float(margen), 2),

@@ -1,0 +1,20 @@
+=== ÚLTIMOS 5 CLIENTES ===
+ID: 12 | Nombre: Juan Camposv | Email: jcamposv@gmail.com
+ID: 11 | Nombre: Ivan Olivares | Email: iolivares@gmail.com
+ID: 10 | Nombre: Juan Soliz | Email: juanso@gmail.com
+ID: 9 | Nombre: Julia Espinoza | Email: juli@gmail.com
+ID: 8 | Nombre: julian diaz | Email: julidi@gmail.com
+
+=== ÚLTIMOS 5 PEDIDOS ===
+ID: 19 | Cliente: Juan Camposv | Estado: completado | Solicitud: 2025-09-10 | Despacho: 2025-09-17 | Región: Metropolitana de Santiago | Comuna: Santiago | Transporte: Chilexpress ($6300.00)
+ID: 18 | Cliente: Juan Camposv | Estado: completado | Solicitud: 2025-05-12 | Despacho: 2025-05-18 | Región: Metropolitana de Santiago | Comuna: Santiago | Transporte: Blue Express ($4050.00)
+ID: 17 | Cliente: Ivan Olivares | Estado: completado | Solicitud: 2025-05-26 | Despacho: 2025-05-31 | Región: Metropolitana de Santiago | Comuna: Santiago | Transporte: Chilexpress ($6300.00)
+ID: 16 | Cliente: Julia Espinoza | Estado: solicitud | Solicitud: 2025-12-01 | Despacho: None | Región: Aysén del General Carlos Ibáñez del Campo | Comuna: Coyhaique | Transporte: None ($0.00)
+ID: 15 | Cliente: Julia Espinoza | Estado: completado | Solicitud: 2025-12-01 | Despacho: 2025-12-01 | Región: La Araucanía | Comuna: Temuco | Transporte: Chilexpress ($11060.00)
+
+=== ÚLTIMOS 5 ITEMS ===
+ID: 37 | Pedido ID: 18 | Desc: ANTEOJO 3M SOLUS CLARO... | Cant: 10 | Venta Unit: $11460 | Costo Unit: $8022 | Subtotal: $114600
+ID: 36 | Pedido ID: 17 | Desc: ANTEOJO 3M SOLUS CLARO... | Cant: 20 | Venta Unit: $7180 | Costo Unit: $5026 | Subtotal: $143600
+ID: 35 | Pedido ID: 19 | Desc: ANTEOJO 3M SOLUS CLARO... | Cant: 20 | Venta Unit: $7180 | Costo Unit: $5026 | Subtotal: $143600
+ID: 34 | Pedido ID: 18 | Desc: ANTEOJO 3M SOLUS OSCURO... | Cant: 4 | Venta Unit: $11460 | Costo Unit: $8022 | Subtotal: $45840
+ID: 33 | Pedido ID: 17 | Desc: ANTEOJO 3M SOLUS OSCURO... | Cant: 20 | Venta Unit: $7180 | Costo Unit: $5026 | Subtotal: $143600
