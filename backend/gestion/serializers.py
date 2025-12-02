@@ -1,0 +1,192 @@
+from rest_framework import serializers
+from .models import Cliente, Pedido, ItemsPedido, ProductoFrecuente
+from django.db import transaction
+
+# 1. Serializers independientes (sin dependencias de otros serializers)
+class ProductoFrecuenteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductoFrecuente
+        fields = '__all__'
+
+class ClienteInputSerializer(serializers.Serializer):
+    nombre = serializers.CharField(max_length=200)
+    email = serializers.EmailField()
+    empresa = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    telefono = serializers.CharField(max_length=50, required=False, allow_blank=True)
+
+class ItemSolicitudInputSerializer(serializers.Serializer):
+    tipo = serializers.CharField(max_length=20) # LINK, MANUAL, CATALOGO
+    descripcion = serializers.CharField()
+    cantidad = serializers.IntegerField(min_value=1)
+    referencia = serializers.CharField(required=False, allow_blank=True)
+    producto_id = serializers.IntegerField(required=False, allow_null=True)
+
+class ClienteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cliente
+        fields = '__all__'
+
+class ItemsPedidoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemsPedido
+        fields = ['id', 'descripcion', 'cantidad', 'tipo_origen', 'referencia', 'producto_frecuente', 'precio_unitario', 'precio_compra', 'subtotal']
+
+class ItemsPedidoUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemsPedido
+        fields = ['id', 'descripcion', 'cantidad', 'precio_unitario', 'precio_compra']
+        # CRÍTICO: Por defecto, DRF trata 'id' como read-only.
+        # Necesitamos hacerlo writable para poder recibir el ID en el payload
+        extra_kwargs = {
+            'id': {'read_only': False, 'required': False}
+        }
+
+# 2. Serializers que dependen de los anteriores
+class SolicitudCreacionSerializer(serializers.Serializer):
+    cliente = ClienteInputSerializer()
+    items = serializers.ListField(child=ItemSolicitudInputSerializer())
+    # Nuevos campos para envío
+    region = serializers.CharField(required=False, allow_blank=True)
+    comuna = serializers.CharField(required=False, allow_blank=True)
+
+    def create(self, validated_data):
+        print("--- INICIO CREATE SOLICITUD ---")
+        print("Data validada:", validated_data)
+        try:
+            cliente_data = validated_data['cliente']
+            items_data = validated_data['items']
+
+            with transaction.atomic():
+                # 1. Crear o actualizar Cliente
+                print(f"Procesando cliente: {cliente_data.get('email')}")
+                cliente, created = Cliente.objects.get_or_create(
+                    email=cliente_data['email'],
+                    defaults={
+                        'nombre': cliente_data['nombre'],
+                        'empresa': cliente_data.get('empresa', ''),
+                        'telefono': cliente_data.get('telefono', '')
+                    }
+                )
+                print(f"Cliente obtenido/creado: {cliente.id} (Creado: {created})")
+
+                # 2. Crear Pedido
+                pedido = Pedido.objects.create(
+                    cliente=cliente,
+                    region=validated_data.get('region', ''),
+                    comuna=validated_data.get('comuna', '')
+                )
+                print(f"Pedido creado: {pedido.id}")
+
+                # 3. Crear Items
+                for item_data in items_data:
+                    print(f"Procesando item: {item_data}")
+                    producto_frecuente = None
+                    if item_data.get('producto_id'):
+                        try:
+                            producto_frecuente = ProductoFrecuente.objects.get(id=item_data['producto_id'])
+                        except ProductoFrecuente.DoesNotExist:
+                            print(f"Producto frecuente ID {item_data['producto_id']} no encontrado.")
+                            pass
+
+                    ItemsPedido.objects.create(
+                        pedido=pedido,
+                        descripcion=item_data['descripcion'],
+                        cantidad=item_data['cantidad'],
+                        tipo_origen=item_data['tipo'],
+                        referencia=item_data.get('referencia', ''),
+                        producto_frecuente=producto_frecuente
+                    )
+                print("Todos los items creados correctamente.")
+                return pedido
+            
+            return pedido
+        except Exception as e:
+            print(f"ERROR CRÍTICO EN CREATE SOLICITUD: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            raise e
+
+class PedidoSerializer(serializers.ModelSerializer):
+    cliente = ClienteSerializer(read_only=True)
+    items = ItemsPedidoSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Pedido
+        fields = [
+            'id', 'cliente', 'fecha_solicitud', 'fecha_actualizacion', 'fecha_despacho',
+            'estado', 'porcentaje_urgencia', 'costo_envio_estimado',
+            'transportista', 'numero_guia', 'region', 'comuna', 'metodo_envio',
+            'nombre_transporte_custom', 'opciones_envio', 'items', 'id_seguimiento'
+        ]
+
+class PedidoDetailUpdateSerializer(serializers.ModelSerializer):
+    cliente = ClienteSerializer(read_only=True)
+    items = ItemsPedidoUpdateSerializer(many=True, required=False)
+
+    class Meta:
+        model = Pedido
+        fields = [
+            'id', 'cliente', 'fecha_solicitud', 'fecha_actualizacion', 'fecha_despacho',
+            'estado', 'porcentaje_urgencia', 'costo_envio_estimado',
+            'transportista', 'numero_guia', 'region', 'comuna', 'metodo_envio',
+            'nombre_transporte_custom', 'opciones_envio', 'items', 'id_seguimiento'
+        ]
+        read_only_fields = ['id', 'cliente', 'fecha_solicitud', 'fecha_actualizacion', 'id_seguimiento']
+
+    def update(self, instance, validated_data):
+        items_data = validated_data.pop('items', [])
+
+        instance.porcentaje_urgencia = validated_data.get('porcentaje_urgencia', instance.porcentaje_urgencia)
+        instance.costo_envio_estimado = validated_data.get('costo_envio_estimado', instance.costo_envio_estimado)
+        
+        # Nuevos campos de envío
+        instance.region = validated_data.get('region', instance.region)
+        instance.comuna = validated_data.get('comuna', instance.comuna)
+        instance.metodo_envio = validated_data.get('metodo_envio', instance.metodo_envio)
+        instance.nombre_transporte_custom = validated_data.get('nombre_transporte_custom', instance.nombre_transporte_custom)
+        instance.opciones_envio = validated_data.get('opciones_envio', instance.opciones_envio)
+        
+        instance.save()
+        
+        print("Pedido principal actualizado con urgencia y envío.")
+        print("Datos de ítems a procesar (items_data):", items_data)
+
+        # Actualizar items existentes
+        items_existentes = {item.id: item for item in instance.items.all()}
+
+        for item_data in items_data:
+            item_id = item_data.get('id')
+            print(f"\nProcesando item ID: {item_id}")
+            print(f"Datos del item: {item_data}")
+            
+            if item_id and item_id in items_existentes:
+                item = items_existentes[item_id]
+                
+                # Actualizar cada campo explícitamente
+                if 'descripcion' in item_data:
+                    item.descripcion = item_data['descripcion']
+                if 'cantidad' in item_data:
+                    item.cantidad = item_data['cantidad']
+                if 'precio_unitario' in item_data:
+                    item.precio_unitario = item_data['precio_unitario']
+                if 'precio_compra' in item_data:
+                    item.precio_compra = item_data['precio_compra']
+                
+                item.save()
+            else:
+                print(f"Item ID {item_id} no encontrado en items existentes")
+        
+        return instance
+
+class PedidoDetailSerializer(serializers.ModelSerializer):
+    cliente = ClienteSerializer(read_only=True)
+    items = ItemsPedidoSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Pedido
+        fields = [
+            'id', 'id_seguimiento', 'estado', 'fecha_solicitud', 'cliente', 'items',
+            'porcentaje_urgencia', 'costo_envio_estimado',
+            'transportista', 'numero_guia',
+            'region', 'comuna', 'metodo_envio', 'nombre_transporte_custom', 'opciones_envio'
+        ]

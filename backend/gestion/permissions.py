@@ -1,0 +1,55 @@
+# backend/gestion/permissions.py
+
+from rest_framework import permissions
+
+
+class IsVendedorOrGerencia(permissions.BasePermission):
+    """
+    Permiso para Vendedores y Gerencia.
+    Usado para: Solicitudes y Cotizaciones
+    """
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        
+        rol = request.user.rol.nombre if request.user.rol else None
+        return rol in ['Vendedor', 'Gerencia']
+
+
+class IsAdministrativaOrGerencia(permissions.BasePermission):
+    """
+    Permiso para Administrativa y Gerencia.
+    Usado para: Gestión de Pagos
+    """
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        
+        rol = request.user.rol.nombre if request.user.rol else None
+        return rol in ['Administrativa', 'Gerencia']
+
+
+class IsDespachadorOrGerencia(permissions.BasePermission):
+    """
+    Permiso para Despachador y Gerencia.
+    Usado para: Gestión de Despachos
+    """
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        
+        rol = request.user.rol.nombre if request.user.rol else None
+        return rol in ['Despachador', 'Gerencia']
+
+
+class IsGerencia(permissions.BasePermission):
+    """
+    Permiso exclusivo para Gerencia.
+    Usado para: BI Dashboard y funciones administrativas
+    """
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        
+        rol = request.user.rol.nombre if request.user.rol else None
+        return rol == 'Gerencia'

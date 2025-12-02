@@ -1,0 +1,268 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cotización #{{ pedido.id }}</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #333;
+            line-height: 1.5;
+            font-size: 12px;
+        }
+
+        .header {
+            width: 100%;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header-table {
+            width: 100%;
+        }
+
+        .company-info h1 {
+            color: #0056b3;
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .company-info p {
+            margin: 0;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .invoice-details {
+            text-align: right;
+        }
+
+        .invoice-details h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .client-info {
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .client-info h3 {
+            margin-top: 0;
+            color: #0056b3;
+            font-size: 14px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        table.items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            table-layout: fixed;
+            /* Fix column widths */
+        }
+
+        table.items th {
+            background-color: #0056b3;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-size: 11px;
+        }
+
+        table.items td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 11px;
+            vertical-align: top;
+        }
+
+        /* Description column specific styles */
+        .col-desc {
+            width: 50%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .col-cant {
+            width: 10%;
+        }
+
+        .col-price {
+            width: 20%;
+        }
+
+        .col-total {
+            width: 20%;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .totals {
+            width: 40%;
+            margin-left: auto;
+        }
+
+        .totals table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .totals td {
+            padding: 5px;
+            text-align: right;
+        }
+
+        .totals .total-row {
+            font-weight: bold;
+            font-size: 14px;
+            border-top: 2px solid #333;
+            color: #0056b3;
+        }
+
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 10px;
+            color: #777;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .terms {
+            margin-top: 30px;
+            font-size: 10px;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <table class="header-table">
+            <tr>
+                <td class="company-info">
+                    <h1>Clarotec</h1>
+                    <p>Soluciones Tecnológicas Integrales</p>
+                    <p>Santiago, Chile</p>
+                    <p>contacto@clarotec.cl</p>
+                </td>
+                <td class="invoice-details">
+                    <h2>COTIZACIÓN</h2>
+                    <p><strong>N°:</strong> #{{ pedido.id }}</p>
+                    <p><strong>Fecha:</strong> {{ pedido.fecha_solicitud|date:"d/m/Y" }}</p>
+                    <p><strong>Válido hasta:</strong> {{ validez|date:"d/m/Y" }}</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="client-info">
+        <h3>Datos del Cliente</h3>
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 50%;"><strong>Nombre:</strong> {{ pedido.cliente.nombre }}</td>
+                <td style="width: 50%;"><strong>Empresa:</strong> {{ pedido.cliente.empresa|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>Email:</strong> {{ pedido.cliente.email }}</td>
+                <td><strong>Teléfono:</strong> {{ pedido.cliente.telefono|default:"-" }}</td>
+            </tr>
+            {% if pedido.region %}
+            <tr>
+                <td colspan="2"><strong>Dirección de Envío:</strong> {{ pedido.comuna }}, {{ pedido.region }}</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+
+    <table class="items">
+        <thead>
+            <tr>
+                <th class="col-desc">Descripción</th>
+                <th class="col-cant text-center">Cant.</th>
+                <th class="col-price text-right">Precio Unit.</th>
+                <th class="col-total text-right">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td class="col-desc">{{ item.descripcion|truncatechars:300 }}</td>
+                <td class="col-cant text-center">{{ item.cantidad }}</td>
+                <td class="col-price text-right">${{ item.precio_unitario|floatformat:0|intcomma }}</td>
+                <td class="col-total text-right">${{ item.subtotal|floatformat:0|intcomma }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <table>
+            <tr>
+                <td><strong>Subtotal:</strong></td>
+                <td>${{ subtotal|floatformat:0|intcomma }}</td>
+            </tr>
+            {% if recargo > 0 %}
+            <tr>
+                <td><strong>Recargo Urgencia ({{ pedido.porcentaje_urgencia }}%):</strong></td>
+                <td>${{ recargo|floatformat:0|intcomma }}</td>
+            </tr>
+            {% endif %}
+
+            <tr>
+                <td><strong>Neto:</strong></td>
+                <td>${{ neto|floatformat:0|intcomma }}</td>
+            </tr>
+            <tr>
+                <td><strong>IVA (19%):</strong></td>
+                <td>${{ iva|floatformat:0|intcomma }}</td>
+            </tr>
+
+            {% if costo_envio > 0 %}
+            <tr>
+                <td><strong>Costo de Envío:</strong></td>
+                <td>${{ costo_envio|floatformat:0|intcomma }}</td>
+            </tr>
+            {% endif %}
+            <tr class="total-row">
+                <td>TOTAL:</td>
+                <td>${{ total|floatformat:0|intcomma }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="terms">
+        <h4>Términos y Condiciones:</h4>
+        <ul>
+            <li>Los precios están expresados en Pesos Chilenos (CLP).</li>
+            <li>La validez de esta cotización es de 15 días hábiles.</li>
+            <li>Los tiempos de entrega están sujetos a disponibilidad de stock.</li>
+            <li>Para confirmar su pedido, por favor realice el pago y envíe el comprobante.</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p>Gracias por preferir a Clarotec.</p>
+        <p>Este documento es una cotización y no representa una factura fiscal.</p>
+    </div>
+</body>
+
+</html>
