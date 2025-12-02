@@ -25,7 +25,8 @@ from .views import (
     SincronizarProductosAPIView, 
     RentabilidadHistoricaAPIView, 
     MetricasKPIView,
-    InfoLogisticaAPIView
+    InfoLogisticaAPIView,
+    BIDashboardDataView
 )
 
 
@@ -74,5 +75,6 @@ urlpatterns = [
     # BI
     path('bi/rentabilidad/', RentabilidadHistoricaAPIView.as_view(), name='bi-rentabilidad'),
     path('bi/kpis/', MetricasKPIView.as_view(), name='bi-kpis'),
+    path('bi/dashboard-stats/', BIDashboardDataView.as_view(), name='bi-dashboard-stats'),
     path('bi/info-logistica/', InfoLogisticaAPIView.as_view(), name='bi-info-logistica'),
 ]

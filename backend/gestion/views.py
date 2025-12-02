@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions, status, viewsets
 from decimal import Decimal
 from django.db.models import Count, Sum, F, Case, When, Value, DecimalField
+from django.db.models.functions import TruncMonth
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Pedido, ProductoFrecuente, Cliente, ItemsPedido
@@ -743,3 +744,93 @@ class InfoLogisticaAPIView(APIView):
             zona_comunas[zona].sort()
 
         return Response(zona_comunas, status=status.HTTP_200_OK)
+
+
+class BIDashboardDataView(APIView):
+    """
+    Endpoint para obtener datos agregados para el Dashboard Avanzado de BI.
+    Retorna: Top Productos, Ventas por Región, Tendencia Mensual.
+    """
+    permission_classes = [IsGerencia]
+
+    def get(self, request):
+        # Filtros Base (Igual que los otros endpoints de BI)
+        pedidos = Pedido.objects.filter(estado='completado')
+        
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        cliente_id = request.query_params.get('cliente_id')
+        
+        regions = request.query_params.getlist('region[]')
+        if not regions and request.query_params.get('region'):
+            regions = request.query_params.get('region').split(',')
+            
+        comunas = request.query_params.getlist('comuna[]')
+        if not comunas and request.query_params.get('comuna'):
+            comunas = request.query_params.get('comuna').split(',')
+
+        if start_date:
+            pedidos = pedidos.filter(fecha_despacho__date__gte=start_date)
+        if end_date:
+            pedidos = pedidos.filter(fecha_despacho__date__lte=end_date)
+        if cliente_id:
+            pedidos = pedidos.filter(cliente_id=cliente_id)
+        if regions:
+            pedidos = pedidos.filter(region__in=regions)
+        if comunas:
+            pedidos = pedidos.filter(comuna__in=comunas)
+
+        # 1. Top 10 Productos (Por Ingresos)
+        # Necesitamos unir con ItemsPedido
+        top_products_qs = ItemsPedido.objects.filter(pedido__in=pedidos).values('descripcion').annotate(
+            total_vendido=Sum('subtotal'),
+            cantidad_total=Sum('cantidad')
+        ).order_by('-total_vendido')[:10]
+        
+        top_products = [
+            {
+                'name': item['descripcion'][:20] + '...' if len(item['descripcion']) > 20 else item['descripcion'], # Truncar nombre largo
+                'full_name': item['descripcion'],
+                'value': float(item['total_vendido']),
+                'cantidad': item['cantidad_total']
+            }
+            for item in top_products_qs
+        ]
+
+        # 2. Ventas por Región
+        # Corrección: Agrupar desde ItemsPedido es más seguro para sumas
+        sales_by_region_qs = ItemsPedido.objects.filter(pedido__in=pedidos).values('pedido__region').annotate(
+            total_ventas=Sum('subtotal')
+        ).order_by('-total_ventas')
+
+        sales_by_region = [
+            {
+                'name': item['pedido__region'],
+                'value': float(item['total_ventas'])
+            }
+            for item in sales_by_region_qs
+        ]
+
+        # 3. Tendencia Mensual de Ingresos
+        monthly_trend_qs = ItemsPedido.objects.filter(pedido__in=pedidos).annotate(
+            month=TruncMonth('pedido__fecha_despacho')
+        ).values('month').annotate(
+            total_ventas=Sum('subtotal'),
+            total_costos=Sum(F('precio_compra') * F('cantidad'))
+        ).order_by('month')
+
+        monthly_trend = [
+            {
+                'name': item['month'].strftime('%Y-%m') if item['month'] else 'N/A',
+                'ventas': float(item['total_ventas']),
+                'costos': float(item['total_costos']),
+                'utilidad': float(item['total_ventas'] - item['total_costos'])
+            }
+            for item in monthly_trend_qs
+        ]
+
+        return Response({
+            'top_products': top_products,
+            'sales_by_region': sales_by_region,
+            'monthly_trend': monthly_trend
+        }, status=status.HTTP_200_OK)

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Alert, Spinner, Form, Badge } from 'react-bootstrap';
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, BarChart, Bar, AreaChart, Area, Brush, ReferenceLine } from 'recharts';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
 import { REGIONES_Y_COMUNAS } from '../../data/locations';
@@ -10,6 +10,7 @@ const BIPanelPage = () => {
     const { token } = useAuth();
     const [data, setData] = useState([]);
     const [kpiData, setKpiData] = useState(null);
+    const [dashboardStats, setDashboardStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -84,6 +85,12 @@ const BIPanelPage = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setKpiData(responseKPI.data);
+
+                // Fetch Advanced Dashboard Stats
+                const responseStats = await axios.get(`http://localhost:8000/api/bi/dashboard-stats/?${queryString}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setDashboardStats(responseStats.data);
 
                 setLoading(false);
             } catch (err) {
@@ -294,37 +301,124 @@ const BIPanelPage = () => {
             ) : error ? (
                 <Alert variant="danger">{error}</Alert>
             ) : (
-                <Row>
-                    <Col md={12}>
-                        <Card className="mb-4 shadow-sm">
-                            <Card.Header as="h5">Rentabilidad Histórica (Pedidos Completados)</Card.Header>
-                            <Card.Body>
-                                <div style={{ width: '100%', height: 400 }}>
-                                    {data.length > 0 ? (
-                                        <ResponsiveContainer>
-                                            <ScatterChart
-                                                margin={{
-                                                    top: 20,
-                                                    right: 20,
-                                                    bottom: 20,
-                                                    left: 20,
-                                                }}
-                                            >
-                                                <CartesianGrid />
-                                                <XAxis type="category" dataKey="fecha" name="Fecha" allowDuplicatedCategory={false} />
-                                                <YAxis type="number" dataKey="ganancia" name="Ganancia" unit="$" />
-                                                <Tooltip content={<CustomTooltip />} />
-                                                <Scatter name="Pedidos" data={data} fill="#8884d8" />
-                                            </ScatterChart>
-                                        </ResponsiveContainer>
-                                    ) : (
-                                        <Alert variant="info">No se encontraron datos con los filtros seleccionados.</Alert>
-                                    )}
-                                </div>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
+                <>
+                    <Row>
+                        <Col md={12}>
+                            <Card className="mb-4 shadow-sm">
+                                <Card.Header as="h5">Rentabilidad Histórica (Pedidos Completados)</Card.Header>
+                                <Card.Body>
+                                    <div style={{ width: '100%', height: 400 }}>
+                                        {data.length > 0 ? (
+                                            <ResponsiveContainer>
+                                                <ScatterChart
+                                                    margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                                                >
+                                                    <CartesianGrid />
+                                                    <XAxis type="category" dataKey="fecha" name="Fecha" allowDuplicatedCategory={false} />
+                                                    <YAxis type="number" dataKey="ganancia" name="Ganancia" unit="$" />
+                                                    <Tooltip content={<CustomTooltip />} />
+                                                    <Legend />
+                                                    <ReferenceLine y={0} stroke="#000" />
+                                                    <Scatter name="Pedidos" data={data} fill="#8884d8">
+                                                        {data.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={entry.margen > 30 ? '#00C49F' : entry.margen > 10 ? '#FFBB28' : '#FF8042'} />
+                                                        ))}
+                                                    </Scatter>
+                                                    <Brush dataKey="fecha" height={30} stroke="#8884d8" />
+                                                </ScatterChart>
+                                            </ResponsiveContainer>
+                                        ) : (
+                                            <Alert variant="info">No se encontraron datos con los filtros seleccionados.</Alert>
+                                        )}
+                                    </div>
+                                    <div className="mt-2 text-center">
+                                        <Badge bg="success" className="me-2">Margen Alto {'>'} 30%</Badge>
+                                        <Badge bg="warning" text="dark" className="me-2">Margen Medio 10-30%</Badge>
+                                        <Badge bg="danger">Margen Bajo {'<'} 10%</Badge>
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+
+                    {/* --- SECCIÓN AVANZADA (NUEVA) --- */}
+                    {dashboardStats && (
+                        <>
+                            <Row className="mb-4">
+                                {/* Tendencia Mensual */}
+                                <Col md={12}>
+                                    <Card className="shadow-sm">
+                                        <Card.Header as="h5">Tendencia de Crecimiento Mensual</Card.Header>
+                                        <Card.Body style={{ height: '300px' }}>
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <AreaChart data={dashboardStats.monthly_trend}>
+                                                    <defs>
+                                                        <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
+                                                            <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                                                            <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                                                        </linearGradient>
+                                                    </defs>
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis dataKey="name" />
+                                                    <YAxis />
+                                                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                                                    <Area type="monotone" dataKey="ventas" stroke="#8884d8" fillOpacity={1} fill="url(#colorVentas)" name="Ventas Totales" />
+                                                    <Area type="monotone" dataKey="utilidad" stroke="#82ca9d" fillOpacity={0.3} fill="#82ca9d" name="Utilidad Neta" />
+                                                    <Legend />
+                                                </AreaChart>
+                                            </ResponsiveContainer>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            </Row>
+
+                            <Row>
+                                {/* Top 10 Productos */}
+                                <Col md={6}>
+                                    <Card className="shadow-sm mb-4">
+                                        <Card.Header as="h5">🏆 Top 10 Productos (Ingresos)</Card.Header>
+                                        <Card.Body style={{ height: '400px' }}>
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart
+                                                    layout="vertical"
+                                                    data={dashboardStats.top_products}
+                                                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                                >
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis type="number" />
+                                                    <YAxis type="category" dataKey="name" width={150} style={{ fontSize: '12px' }} />
+                                                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                                                    <Bar dataKey="value" fill="#82ca9d" name="Ingresos" />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+
+                                {/* Ventas por Región */}
+                                <Col md={6}>
+                                    <Card className="shadow-sm mb-4">
+                                        <Card.Header as="h5">🗺️ Ventas por Región</Card.Header>
+                                        <Card.Body style={{ height: '400px' }}>
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart
+                                                    data={dashboardStats.sales_by_region}
+                                                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                                >
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} interval={0} style={{ fontSize: '10px' }} />
+                                                    <YAxis />
+                                                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                                                    <Bar dataKey="value" fill="#8884d8" name="Ventas" />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            </Row>
+                        </>
+                    )}
+                </>
             )}
         </Container>
     );

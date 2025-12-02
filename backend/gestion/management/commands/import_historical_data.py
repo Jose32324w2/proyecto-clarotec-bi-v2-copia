@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
         self.stdout.write(f'Leyendo archivo: {file_path}...')
         try:
-            df = pd.read_excel(file_path).head(5) # LIMITADO A 5 FILAS POR SOLICITUD DEL USUARIO
+            df = pd.read_excel(file_path)
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error leyendo Excel: {e}'))
             return
