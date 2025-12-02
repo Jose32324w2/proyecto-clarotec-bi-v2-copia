@@ -98,8 +98,6 @@ class SolicitudCreacionSerializer(serializers.Serializer):
                     )
                 print("Todos los items creados correctamente.")
                 return pedido
-            
-            return pedido
         except Exception as e:
             print(f"ERROR CRÍTICO EN CREATE SOLICITUD: {str(e)}")
             import traceback

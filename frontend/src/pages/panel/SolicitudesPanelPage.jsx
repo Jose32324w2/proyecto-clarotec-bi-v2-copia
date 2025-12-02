@@ -25,9 +25,9 @@ const SolicitudesPanelPage = () => {
         fetchSolicitudes();
     }, []);
 
-    useEffect(() => {
-        filterSolicitudes();
-    }, [filterSolicitudes]);
+    // useEffect(() => {
+    //     filterSolicitudes();
+    // }, [filterSolicitudes]);
 
 
     const fetchSolicitudes = async () => {
