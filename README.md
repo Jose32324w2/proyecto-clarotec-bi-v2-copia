@@ -1,75 +1,109 @@
-# Proyecto Clarotec - Sistema de Gestión de Pedidos
+# Proyecto Clarotec - Sistema de Gestión de Pedidos y BI
 
-Este proyecto es un sistema integral para la gestión de pedidos, cotizaciones y despachos, desarrollado con **Django (Backend)** y **React (Frontend)**.
+Este proyecto es un sistema integral para la gestión de pedidos, cotizaciones, despachos e **Inteligencia de Negocios (BI)**, desarrollado con **Django (Backend)** y **React (Frontend)**.
 
 ## Características Principales
 
-*   **Gestión de Solicitudes:** Recepción y administración de solicitudes de clientes.
-*   **Cotizaciones:** Creación, edición y envío de cotizaciones en PDF.
-*   **Historial de Cotizaciones:** Visualización de cotizaciones pasadas (aceptadas, rechazadas, etc.).
-*   **Gestión de Productos:** Catálogo de productos frecuentes con sincronización automática desde pedidos históricos.
-*   **Pagos:** Registro y confirmación de pagos.
-*   **Despachos:** Gestión logística, asignación de transportistas y seguimiento.
-*   **Portal de Clientes:** Interfaz para que los clientes revisen, acepten o rechacen cotizaciones.
-*   **Roles y Permisos:** Sistema de acceso basado en roles (Vendedor, Administrativa, Despachador, Gerencia).
+### 📋 Gestión Operativa
+*   **Gestión de Solicitudes:** Recepción y administración centralizada de solicitudes.
+*   **Cotizaciones:** Creación, edición y envío de cotizaciones formales en PDF.
+*   **Historial Completo:** Trazabilidad de cotizaciones (aceptadas, rechazadas, vencidas).
+*   **Gestión de Productos:** Catálogo de productos frecuentes con sincronización automática.
+*   **Pagos y Despachos:** Flujo completo desde la confirmación del pago hasta el despacho y entrega.
+*   **Portal de Clientes:** Interfaz segura para que los clientes revisen y aprueben cotizaciones.
+
+### 📊 Inteligencia de Negocios (BI)
+*   **Dashboard Avanzado:** Visualización de KPIs críticos en tiempo real.
+*   **Rentabilidad Histórica:** Gráfico de dispersión interactivo para analizar márgenes por pedido.
+*   **KPIs Clave:**
+    *   Volumen de Ventas (Ingresos y Cantidad).
+    *   Margen Operacional Global.
+    *   Tasa de Recurrencia de Clientes.
+*   **Filtros Dinámicos:** Análisis por rango de fechas, cliente, región y comuna.
+*   **Top Productos y Tendencias:** Gráficos de los productos más vendidos y tendencias mensuales de ingresos.
+
+### 🔐 Seguridad y Roles
+*   **Autenticación JWT:** Sistema seguro de tokens.
+*   **Roles Definidos:** Vendedor, Administrativa, Despachador, Gerencia (con acceso exclusivo a BI).
 
 ## Tecnologías Utilizadas
 
 ### Backend
 *   **Python 3.10+**
-*   **Django 5.1** & **Django REST Framework**
-*   **SQLite** (Base de datos por defecto)
+*   **Django 5.2** & **Django REST Framework**
+*   **MySQL / SQLite** (Configurable)
+*   **Pandas & OpenPyXL** (Procesamiento de datos y ETL)
 *   **Simple JWT** (Autenticación)
 *   **xhtml2pdf** (Generación de PDFs)
 
 ### Frontend
 *   **React 18**
 *   **Vite**
-*   **Bootstrap 5** (Estilos)
-*   **Axios** (Peticiones HTTP)
-*   **React Router DOM** (Navegación)
+*   **Recharts** (Visualización de datos y gráficos)
+*   **Bootstrap 5** (Diseño responsivo)
+*   **Axios** (Comunicación API)
 
-## Instalación y Configuración
+## Instalación y Configuración (Desde Cero)
 
 ### Prerrequisitos
-*   Python instalado.
-*   Node.js y npm instalados.
+*   Python 3.10 o superior.
+*   Node.js y npm.
+*   Git.
 
-### Backend (Django)
+### 1. Backend (Django)
 
-1.  Navegar a la carpeta `backend`:
+1.  Clonar el repositorio y navegar a la carpeta `backend`:
     ```bash
-    cd backend
+    git clone <url-del-repo>
+    cd proyecto-clarotec/backend
     ```
-2.  Crear un entorno virtual e instalar dependencias:
+
+2.  Crear y activar un entorno virtual:
     ```bash
     python -m venv venv
-    source venv/bin/activate  # En Windows: venv\Scripts\activate
+    # Windows:
+    venv\Scripts\activate
+    # Mac/Linux:
+    source venv/bin/activate
+    ```
+
+3.  Instalar dependencias:
+    ```bash
     pip install -r requirements.txt
     ```
-3.  Aplicar migraciones:
+
+4.  **Restaurar Base de Datos (Importante):**
+    Para tener el sistema con todos los datos históricos y configuraciones:
     ```bash
+    # Crear tablas vacías
     python manage.py migrate
+
+    # Cargar backup completo (Datos históricos + Nuevos)
+    python manage.py loaddata data/backup_completo.json
     ```
-4.  Crear superusuario (opcional):
+
+5.  Crear superusuario (si no venía en el backup o quieres uno nuevo):
     ```bash
     python manage.py createsuperuser
     ```
-5.  Iniciar el servidor:
+
+6.  Iniciar el servidor:
     ```bash
     python manage.py runserver
     ```
 
-### Frontend (React)
+### 2. Frontend (React)
 
-1.  Navegar a la carpeta `frontend`:
+1.  Navegar a la carpeta `frontend` (en otra terminal):
     ```bash
-    cd frontend
+    cd ../frontend
     ```
+
 2.  Instalar dependencias:
     ```bash
     npm install
     ```
+
 3.  Iniciar el servidor de desarrollo:
     ```bash
     npm run dev
@@ -78,26 +112,33 @@ Este proyecto es un sistema integral para la gestión de pedidos, cotizaciones y
 ## Estructura del Proyecto
 
 ### Backend (`backend/gestion`)
-*   `models.py`: Definición de modelos (Pedido, Cliente, ProductoFrecuente, ItemsPedido).
-*   `views.py`: Lógica de negocio y endpoints de la API.
-*   `serializers.py`: Transformación de datos para la API.
-*   `urls.py`: Rutas de la API.
-*   `permissions.py`: Permisos personalizados por rol.
+*   `models.py`: Modelos de datos (Pedido, Cliente, ItemsPedido, ProductoFrecuente).
+*   `views.py`: Lógica de negocio, endpoints API y vistas de BI (`BIDashboardDataView`).
+*   `serializers.py`: Serializadores DRF.
+*   `management/commands/`: Scripts de utilidad (ej. `import_historical_data.py`).
+*   `data/`: Archivos estáticos de datos (`basis.xlsx`, `backup_completo.json`).
 
 ### Frontend (`frontend/src`)
-*   `pages/panel/`: Vistas del panel administrativo (Dashboard, Cotizaciones, Pagos, Despachos).
-*   `pages/portal/`: Vistas del portal de clientes.
-*   `components/`: Componentes reutilizables (CurrencyInput, Navbar, Sidebar).
-*   `context/`: Contexto de autenticación (AuthContext).
+*   `pages/panel/`:
+    *   `BIPanelPage.jsx`: Dashboard de Inteligencia de Negocios.
+    *   `SolicitudesPanelPage.jsx`: Gestión de pedidos.
+*   `pages/portal/`: Vista del cliente.
+*   `components/`: Componentes UI reutilizables.
+*   `hooks/`: Lógica personalizada (ej. `useAuth`).
 
-## Uso del Sistema
+## Comandos Útiles
 
-1.  **Login:** Acceder con credenciales de usuario.
-2.  **Dashboard:** Vista general de métricas y accesos rápidos.
-3.  **Solicitudes:** Revisar nuevas solicitudes y crear cotizaciones.
-4.  **Cotizaciones:** Editar precios, agregar items, calcular envíos y generar PDFs.
-5.  **Productos:** Administrar el catálogo o sincronizar productos desde pedidos anteriores.
-6.  **Pagos/Despachos:** Gestionar el flujo final del pedido.
+### Crear Backup de Base de Datos
+Si realizas cambios importantes y quieres guardar el estado actual de la BD:
+```bash
+python manage.py dumpdata --exclude auth.permission --exclude contenttypes --indent 2 > data/backup_completo.json
+```
+
+### Importar Datos Históricos (Excel)
+Si necesitas recargar datos desde el Excel original (solo inicial):
+```bash
+python manage.py import_historical_data
+```
 
 ---
 Desarrollado para Clarotec.
