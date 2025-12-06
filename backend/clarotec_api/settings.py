@@ -169,4 +169,11 @@ SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Configuración de Email (Gmail SMTP)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'correoclarotec@gmail.com'
+EMAIL_HOST_PASSWORD = 'jtgp lpwo bzun gdrc'  # Contraseña de aplicación
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

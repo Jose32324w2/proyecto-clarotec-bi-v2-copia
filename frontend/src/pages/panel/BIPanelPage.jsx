@@ -402,12 +402,13 @@ const BIPanelPage = () => {
                                         <Card.Body style={{ height: '400px' }}>
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <BarChart
+                                                    layout="vertical"
                                                     data={dashboardStats.sales_by_region}
                                                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                                                 >
                                                     <CartesianGrid strokeDasharray="3 3" />
-                                                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} interval={0} style={{ fontSize: '10px' }} />
-                                                    <YAxis />
+                                                    <XAxis type="number" />
+                                                    <YAxis type="category" dataKey="name" width={150} style={{ fontSize: '10px' }} />
                                                     <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
                                                     <Bar dataKey="value" fill="#8884d8" name="Ventas" />
                                                 </BarChart>

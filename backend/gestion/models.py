@@ -13,6 +13,17 @@ class Cliente(models.Model):
     telefono = models.CharField(max_length=50, blank=True, null=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
+    # Campos para Retención (Churn)
+    last_retention_email_sent_at = models.DateTimeField(null=True, blank=True, help_text="Fecha del último correo de retención enviado.")
+    RETENTION_STATUS_CHOICES = [
+        ('pending', 'Pendiente'),
+        ('contacted', 'Contactado'),
+        ('no_response', 'Sin Respuesta'),
+        ('rejected', 'Rechazado / No Molestar'),
+        ('recovered', 'Recuperado'),
+    ]
+    retention_status = models.CharField(max_length=20, choices=RETENTION_STATUS_CHOICES, default='pending')
+
     def __str__(self):
         return f"{self.nombre} ({self.empresa})"
 

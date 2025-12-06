@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Te extrañamos en Clarotec!</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; color: #333; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); overflow: hidden; }
+        .header { background-color: #ffc107; color: #333; padding: 20px; text-align: center; } /* Warning color for retention */
+        .content { padding: 30px; }
+        .btn { display: inline-block; padding: 12px 24px; background-color: #007bff; color: #ffffff !important; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .footer { background-color: #eee; padding: 15px; text-align: center; font-size: 12px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>¡Te extrañamos, {{ nombre_cliente }}!</h2>
+        </div>
+        <div class="content">
+            <p>Hola <strong>{{ nombre_cliente }}</strong>,</p>
+            
+            <p>Notamos que han pasado <strong>{{ days_inactive }} días</strong> desde tu última compra con nosotros.</p>
+            
+            {% if last_product %}
+            <p>Esperamos que tu <strong>{{ last_product }}</strong> te haya sido de gran utilidad.</p>
+            {% endif %}
+
+            <p>En Clarotec, siempre estamos renovando nuestro stock con las mejores herramientas y equipos. Nos encantaría ayudarte con tus próximos proyectos.</p>
+
+            <p>¿Necesitas algo específico? Responde a este correo y te ayudaremos de inmediato.</p>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="http://localhost:3000" class="btn">Ver Catálogo Actualizado</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; {% now "Y" %} Clarotec. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

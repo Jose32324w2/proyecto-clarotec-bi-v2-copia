@@ -1,0 +1,104 @@
+
+class ClientRetentionView(APIView):
+    """
+    Endpoint para el Dashboard de Retención de Clientes (Churn).
+    Clasifica a los clientes en:
+    - Activo (< 30 días sin comprar)
+    - En Riesgo (30 - 90 días sin comprar)
+    - Perdido (> 90 días sin comprar)
+    """
+    permission_classes = [IsVendedorOrGerencia]
+
+    def get(self, request):
+        # Obtenemos todos los clientes
+        clientes = Cliente.objects.all()
+        
+        data = []
+        now = timezone.now()
+        
+        # Contadores para las tarjetas de resumen
+        summary = {
+            'active': 0,
+            'risk': 0,
+            'lost': 0,
+            'total_clients': 0
+        }
+
+        for cliente in clientes:
+            # Buscar la última fecha de un pedido COMPLETADO o DESPACHADO (Venta real)
+            last_order = Pedido.objects.filter(
+                cliente=cliente, 
+                estado__in=['completado', 'despachado', 'pagado', 'aceptado'] # Consideramos venta cerrada desde aceptado
+            ).order_by('-fecha_solicitud').first()
+            
+            # Calcular Total Gastado (Lifetime Value)
+            # Sumamos el total de todos los pedidos cerrados
+            # Nota: Esto es aproximado, idealmente sumaríamos los items.
+            # Para hacerlo eficiente, sumamos items de pedidos cerrados.
+            total_spent = ItemsPedido.objects.filter(
+                pedido__cliente=cliente,
+                pedido__estado__in=['completado', 'despachado', 'pagado', 'aceptado']
+            ).aggregate(total=Sum(F('cantidad') * F('precio_unitario')))['total'] or 0
+
+            days_inactive = -1
+            status_label = 'N/A'
+            last_product = "Sin compras"
+            
+            if last_order:
+                diff = now - last_order.fecha_solicitud
+                days_inactive = diff.days
+                
+                # Clasificación
+                if days_inactive <= 30:
+                    status_label = 'active'
+                    summary['active'] += 1
+                elif days_inactive <= 90:
+                    status_label = 'risk'
+                    summary['risk'] += 1
+                else:
+                    status_label = 'lost'
+                    summary['lost'] += 1
+                
+                # Obtener último producto comprado para "excusa de conversación"
+                last_item = last_order.items.first()
+                if last_item:
+                    last_product = last_item.descripcion
+            else:
+                # Si nunca ha comprado, lo consideramos "Lost" o "Lead"
+                # Para efectos de este dashboard de "Retención", si no tiene compras no hay nada que retener,
+                # pero lo pondremos en 'lost' para que aparezca.
+                status_label = 'lost' 
+                summary['lost'] += 1
+                days_inactive = 999 # Nunca compró
+
+            summary['total_clients'] += 1
+
+            data.append({
+                'id': cliente.id,
+                'nombre': cliente.nombre,
+                'email': cliente.email,
+                'telefono': cliente.telefono,
+                'empresa': cliente.empresa,
+                'days_inactive': days_inactive,
+                'status': status_label,
+                'total_spent': total_spent,
+                'last_product': last_product,
+                'last_order_date': last_order.fecha_solicitud if last_order else None
+            })
+
+        # Ordenar por defecto: Los "En Riesgo" primero (prioridad de ataque), luego por valor histórico
+        # Prioridad de orden: 
+        # 1. Risk (Los que hay que salvar YA)
+        # 2. Lost (Para intentar recuperar)
+        # 3. Active (Están bien)
+        
+        def sort_key(item):
+            priority = {'risk': 0, 'lost': 1, 'active': 2}
+            return (priority.get(item['status'], 3), -item['total_spent'])
+
+        data.sort(key=sort_key)
+
+        return Response({
+            'summary': summary,
+            'clients': data
+        })

@@ -26,7 +26,10 @@ from .views import (
     RentabilidadHistoricaAPIView, 
     MetricasKPIView,
     InfoLogisticaAPIView,
-    BIDashboardDataView
+    BIDashboardDataView,
+    ClientRetentionView,
+    SendRetentionEmailView,
+    UpdateClientStatusView
 )
 
 
@@ -47,6 +50,11 @@ urlpatterns = [
     path('pedidos/<int:pk>/', PedidoDetailAPIView.as_view(), name='panel-pedido-detail'),
     path('pedidos/<int:pk>/enviar-cotizacion/', EnviarCotizacionAPIView.as_view(), name='enviar-cotizacion'),
     path('pedidos/<int:pk>/pdf/', GenerarPDFAPIView.as_view(), name='generar-pdf'),
+    
+    # Business Intelligence
+    path('bi/retention/', ClientRetentionView.as_view(), name='bi-retention'),
+    path('bi/retention/email/<int:client_id>/', SendRetentionEmailView.as_view(), name='bi-retention-email'),
+    path('bi/retention/status/<int:client_id>/', UpdateClientStatusView.as_view(), name='bi-retention-status'),
     
     # Panel Administrativa
     path('pedidos/aceptados/', PedidosAceptadosListView.as_view(), name='panel-pedidos-aceptados'),

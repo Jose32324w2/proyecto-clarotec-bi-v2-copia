@@ -20,6 +20,7 @@ import DespachosPanelPage from './pages/panel/DespachosPanelPage';
 import ProductosPanelPage from './pages/panel/ProductosPanelPage';
 import ClientesPanelPage from './pages/panel/ClientesPanelPage';
 import BIPanelPage from './pages/panel/BIPanelPage';
+import ClientRetentionPage from './pages/panel/ClientRetentionPage';
 
 
 // --- Importación de Componentes ---
@@ -53,7 +54,10 @@ const Navbar = () => {
 
                 {/* --- NUEVO ENLACE PARA GERENCIA (BI) --- */}
                 {user.rol && user.rol.nombre === 'Gerencia' && (
-                    <Link to="/panel/bi" style={{ marginRight: '1rem' }}>Inteligencia de Negocios</Link>
+                    <>
+                        <Link to="/panel/bi" style={{ marginRight: '1rem' }}>Inteligencia de Negocios</Link>
+                        <Link to="/panel/bi/retention" style={{ marginRight: '1rem' }}>Retención (Churn)</Link>
+                    </>
                 )}
 
                 {/* --- NUEVO ENLACE CONDICIONAL PARA ADMINISTRATIVA --- */}
@@ -101,6 +105,7 @@ function App() {
                             <Route path="/panel/productos" element={<ProductosPanelPage />} />
                             <Route path="/panel/clientes" element={<ClientesPanelPage />} />
                             <Route path="/panel/bi" element={<BIPanelPage />} />
+                            <Route path="/panel/bi/retention" element={<ClientRetentionPage />} />
 
                         </Route>
 

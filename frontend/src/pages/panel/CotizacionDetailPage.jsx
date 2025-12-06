@@ -36,6 +36,9 @@ const CotizacionDetailPage = () => {
     // Nuevo estado para guardar las opciones calculadas
     const [shippingOptions, setShippingOptions] = useState({});
 
+    // Estado para Margen Global (Automatización de Precios)
+    const [globalMargin, setGlobalMargin] = useState('');
+
     useEffect(() => {
         const fetchPedido = async () => {
             try {
@@ -90,6 +93,40 @@ const CotizacionDetailPage = () => {
             ...prevPedido,
             [field]: value
         }));
+    };
+
+    // Función para manejar el cambio de Margen Global
+    const handleGlobalMarginChange = (e) => {
+        const marginValue = e.target.value;
+        setGlobalMargin(marginValue);
+
+        const margin = parseFloat(marginValue);
+
+        if (!isNaN(margin) && pedido) {
+            // Validación para evitar división por cero o márgenes imposibles (>= 100%)
+            if (margin >= 100) {
+                return; // No hacer nada si el margen es 100% o más (precio infinito)
+            }
+
+            setPedido(prevPedido => ({
+                ...prevPedido,
+                items: prevPedido.items.map(item => {
+                    const cost = parseFloat(item.precio_compra) || 0;
+
+                    // Fórmula Margen Objetivo (Gross Margin): Costo / (1 - Margen/100)
+                    // Ejemplo: Costo 5000 / (1 - 0.20) = 5000 / 0.8 = 6250
+                    let newPrice = 0;
+                    if (cost > 0) {
+                        newPrice = Math.round(cost / (1 - margin / 100));
+                    }
+
+                    return {
+                        ...item,
+                        precio_unitario: newPrice
+                    };
+                })
+            }));
+        }
     };
 
     const handleCalculateShipping = async () => {
@@ -320,8 +357,20 @@ const CotizacionDetailPage = () => {
                 {/* Columna Derecha: Items y Totales */}
                 <div className="col-md-8">
                     <div className="card shadow-sm">
-                        <div className="card-header bg-light">
+                        <div className="card-header bg-light d-flex justify-content-between align-items-center">
                             <h5 className="mb-0">Ítems a Cotizar</h5>
+                            <div className="d-flex align-items-center">
+                                <label className="me-2 mb-0 small fw-bold text-primary">Margen Global (%):</label>
+                                <input
+                                    type="number"
+                                    className="form-control form-control-sm border-primary"
+                                    style={{ width: '80px' }}
+                                    value={globalMargin}
+                                    onChange={handleGlobalMarginChange}
+                                    placeholder="0"
+                                    title="Ingresa un % para calcular automáticamente el precio de venta"
+                                />
+                            </div>
                         </div>
                         <div className="card-body p-0">
                             <div className="table-responsive">

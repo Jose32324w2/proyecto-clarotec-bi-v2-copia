@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px; }
+        .header { background-color: #f8f9fa; padding: 10px; text-align: center; border-bottom: 1px solid #eee; }
+        .content { padding: 20px; }
+        .footer { font-size: 12px; color: #777; text-align: center; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }
+        .btn { display: inline-block; padding: 10px 20px; background-color: #dc3545; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>¡Te extrañamos, {{ nombre_cliente }}!</h2>
+        </div>
+        <div class="content">
+            <p>Hola,</p>
+            
+            <p>Nos hemos dado cuenta de que ha pasado un tiempo (<strong>{{ days_inactive }} días</strong>) desde la última vez que trabajamos juntos.</p>
+            
+            <p>Sabemos que las necesidades de tu negocio pueden cambiar, pero queremos recordarte que en <strong>Clarotec</strong> seguimos aquí para apoyarte con soluciones rápidas y confiables.</p>
+            
+            <p>¿Hubo algo que nos faltó la última vez? ¿O simplemente no has tenido nuevos requerimientos? Nos encantaría tener la oportunidad de servirte nuevamente.</p>
+            
+            <p style="text-align: center; margin-top: 30px;">
+                <a href="mailto:ventas@clarotec.cl" class="btn">Hablemos de nuevo</a>
+            </p>
+        </div>
+        <div class="footer">
+            <p>Este es un mensaje automático de tu equipo de Clarotec.</p>
+        </div>
+    </div>
+</body>
+</html>
