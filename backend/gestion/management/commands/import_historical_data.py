@@ -5,7 +5,7 @@ PROPOSITO:
     Ejecuta el proceso ETL (Extracción, Transformación y Carga) desde un Excel.
     Simula logística y costos de envío para datos históricos.
     Puebla la base de datos para inicio del proyecto.
-    
+
 USO:
     python manage.py import_historical_data
 """

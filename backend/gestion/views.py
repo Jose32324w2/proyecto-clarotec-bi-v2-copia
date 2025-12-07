@@ -525,7 +525,7 @@ class PedidosHistorialPagosListView(generics.ListAPIView):
 
     def get_queryset(self):
 
-        return Pedido.objects.filter(estado='pago_confirmado').order_by('-fecha_actualizacion')
+        return Pedido.objects.filter(estado__in=['pago_confirmado', 'rechazado', 'despachado', 'completado']).order_by('-fecha_actualizacion')
 
 
 class ConfirmarPagoView(APIView):
@@ -1261,7 +1261,9 @@ class ClientRetentionView(APIView):
 
             data.append({
                 'id': cliente.id,
-                'nombre': cliente.nombre,
+                'nombre': f"{cliente.nombres} {cliente.apellidos}".strip(),  # Concatenado para visualización
+                'nombres': cliente.nombres,
+                'apellidos': cliente.apellidos,
                 'email': cliente.email,
                 'telefono': cliente.telefono,
                 'empresa': cliente.empresa,
@@ -1374,3 +1376,66 @@ class UpdateClientStatusView(APIView):
 
         except Cliente.DoesNotExist:
             return Response({'error': 'Cliente no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class RechazarPagoView(APIView):
+    """
+    Endpoint para que un administrativo rechace el pago de un pedido.
+    Cambia el estado a 'rechazado' y notifica al cliente.
+    """
+    permission_classes = [IsVendedorOrGerencia]  # Administrativa tambien
+
+    def post(self, request, pk):
+        try:
+            pedido = Pedido.objects.get(pk=pk, estado='aceptado')  # Solo rechazar si está en espera de pago/aceptado
+
+            # Cambiar estado a Rechazado
+            pedido.estado = 'rechazado'
+            pedido.save()
+
+            # Enviar correo
+            try:
+                asunto = f"Problema con tu Pago - Pedido #{pedido.id} - Clarotec"
+                html_message = render_to_string('email/pago_rechazado.html', {'pedido': pedido})
+                plain_message = strip_tags(html_message)
+                send_mail(asunto, plain_message, settings.DEFAULT_FROM_EMAIL,
+                          [pedido.cliente.email], html_message=html_message)
+            except Exception as e:
+                print(f"Error enviando correo de rechazo: {e}")
+
+            return Response({'status': 'pago rechazado'}, status=status.HTTP_200_OK)
+
+        except Pedido.DoesNotExist:
+            return Response({'error': 'Pedido no encontrado o estado incorrecto.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ClientHistoryAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        # 1. Obtener email del usuario logueado
+        user_email = request.user.email
+
+        # 2. Buscar pedidos asociados a ese email (a través del Cliente)
+        # Nota: El link es por email, ya que el usuario 'Cliente' y la ficha 'Cliente' comparten email.
+        pedidos = Pedido.objects.filter(cliente__email=user_email).order_by('-fecha_solicitud')
+
+        # 3. Serializar (Usamos el serializer de lista o detalle simplificado)
+        # Reutilizamos PedidoSerializer o construimos una respuesta custom
+        data = []
+        for p in pedidos:
+            # Calcular total dinámicamente
+            total_items = sum(item.subtotal for item in p.items.all())
+            # Agregar costo de envío si aplica (simplificado)
+            total = total_items + p.costo_envio_estimado
+
+            data.append({
+                'id': p.id,
+                'fecha_solicitud': p.fecha_solicitud,
+                'estado': p.estado,
+                'total_cotizacion': total,
+                'id_seguimiento': p.id_seguimiento,
+                'items_count': p.items.count()
+            })
+
+        return Response(data, status=status.HTTP_200_OK)

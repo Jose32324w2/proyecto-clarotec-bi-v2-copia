@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Modal, Button } from 'react-bootstrap';
+import PaginationControl from '../../components/common/PaginationControl';
 
 const SolicitudesPanelPage = () => {
     const [solicitudes, setSolicitudes] = useState([]);
@@ -24,11 +25,6 @@ const SolicitudesPanelPage = () => {
     useEffect(() => {
         fetchSolicitudes();
     }, []);
-
-    // useEffect(() => {
-    //     filterSolicitudes();
-    // }, [filterSolicitudes]);
-
 
     const fetchSolicitudes = async () => {
         try {
@@ -84,6 +80,10 @@ const SolicitudesPanelPage = () => {
         setCurrentPage(1);
     }, [solicitudes, searchTerm, startDate, endDate]);
 
+    useEffect(() => {
+        filterSolicitudes();
+    }, [filterSolicitudes]);
+
     const handleShowModal = (solicitud) => {
         setSelectedSolicitud(solicitud);
         setShowModal(true);
@@ -99,8 +99,6 @@ const SolicitudesPanelPage = () => {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredSolicitudes.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredSolicitudes.length / itemsPerPage);
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     if (loading) {
         return (
@@ -268,58 +266,11 @@ const SolicitudesPanelPage = () => {
 
                     {/* Paginación */}
                     {totalPages > 1 && (
-                        <nav className="mt-4">
-                            <ul className="pagination justify-content-center">
-                                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                    <button
-                                        className="page-link"
-                                        onClick={() => paginate(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                    >
-                                        <i className="bi bi-chevron-left"></i>
-                                    </button>
-                                </li>
-
-                                {[...Array(totalPages)].map((_, index) => {
-                                    const pageNumber = index + 1;
-                                    if (
-                                        pageNumber === 1 ||
-                                        pageNumber === totalPages ||
-                                        (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
-                                    ) {
-                                        return (
-                                            <li
-                                                key={pageNumber}
-                                                className={`page-item ${currentPage === pageNumber ? 'active' : ''}`}
-                                            >
-                                                <button
-                                                    className="page-link"
-                                                    onClick={() => paginate(pageNumber)}
-                                                >
-                                                    {pageNumber}
-                                                </button>
-                                            </li>
-                                        );
-                                    } else if (
-                                        pageNumber === currentPage - 2 ||
-                                        pageNumber === currentPage + 2
-                                    ) {
-                                        return <li key={pageNumber} className="page-item disabled"><span className="page-link">...</span></li>;
-                                    }
-                                    return null;
-                                })}
-
-                                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                    <button
-                                        className="page-link"
-                                        onClick={() => paginate(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                    >
-                                        <i className="bi bi-chevron-right"></i>
-                                    </button>
-                                </li>
-                            </ul>
-                        </nav>
+                        <PaginationControl
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
                     )}
                 </>
             )}

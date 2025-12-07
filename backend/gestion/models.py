@@ -21,7 +21,9 @@ class Cliente(models.Model):
     Almacena la información de contacto de un cliente.
     No es un usuario del sistema, sino una entidad externa que solicita cotizaciones.
     """
-    nombre = models.CharField(max_length=255)
+    nombre = models.CharField(max_length=255, help_text="Campo legado. Se eliminará tras validar 'nombres' y 'apellidos'.")
+    nombres = models.CharField(max_length=255, default="", help_text="Nombres del cliente (Ej. Juan Andrés)")
+    apellidos = models.CharField(max_length=255, default="", help_text="Apellidos del cliente (Ej. Pérez González)")
     empresa = models.CharField(max_length=255, blank=True)
     email = models.EmailField(unique=True, help_text="Email único para identificar al cliente.")
     telefono = models.CharField(max_length=50, blank=True, null=True)

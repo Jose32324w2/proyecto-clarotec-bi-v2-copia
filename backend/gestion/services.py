@@ -3,11 +3,12 @@ Servicios de Lógica de Negocio (Backend).
 
 PROPOSITO:
     Encapsula lógica compleja reutilizable que no pertenece a Modelos ni Vistas.
-    
+
 SERVICIOS:
     - ShippingCalculator: Calcula costos de envío por región/comuna.
 """
 # backend/gestion/services.py
+
 
 class ShippingCalculator:
     """

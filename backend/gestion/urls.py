@@ -36,7 +36,9 @@ from .views import (
     BIDashboardDataView,
     ClientRetentionView,
     SendRetentionEmailView,
-    UpdateClientStatusView
+    UpdateClientStatusView,
+    RechazarPagoView,
+    ClientHistoryAPIView
 )
 
 
@@ -67,6 +69,7 @@ urlpatterns = [
     path('pedidos/aceptados/', PedidosAceptadosListView.as_view(), name='panel-pedidos-aceptados'),
     path('pedidos/historial-pagos/', PedidosHistorialPagosListView.as_view(), name='panel-pedidos-historial-pagos'),
     path('pedidos/<int:pk>/confirmar-pago/', ConfirmarPagoView.as_view(), name='confirmar-pago'),
+    path('pedidos/<int:pk>/rechazar-pago/', RechazarPagoView.as_view(), name='rechazar-pago'),
 
     # Panel Vendedores (Seguimiento)
     path('pedidos/cotizados/', PedidosCotizadosListView.as_view(), name='panel-pedidos-cotizados'),
@@ -84,6 +87,7 @@ urlpatterns = [
          SeleccionarEnvioAPIView.as_view(), name='portal-seleccionar-envio'),
     path('portal/pedidos/<uuid:id_seguimiento>/confirmar-recepcion/',
          ConfirmarRecepcionView.as_view(), name='portal-confirmar-recepcion'),
+    path('portal/mis-pedidos/', ClientHistoryAPIView.as_view(), name='client-history'),
 
     # Nuevos Endpoints (Fase 13)
     path('pedidos/historial-cotizaciones/', PedidosHistorialCotizacionesListView.as_view(),

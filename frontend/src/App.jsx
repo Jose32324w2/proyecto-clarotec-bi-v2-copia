@@ -16,9 +16,12 @@ import './App.css';
 // --- Importación de Páginas ---
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import SolicitudPage from './pages/SolicitudPage';
 import PortalPage from './pages/PortalPage';
+import ClientHistoryPage from './pages/ClientHistoryPage';
+import ClientProfilePage from './pages/ClientProfilePage';
 import SolicitudesPanelPage from './pages/panel/SolicitudesPanelPage';
 import CotizacionDetailPage from './pages/panel/CotizacionDetailPage';
 import CotizacionesPanelPage from './pages/panel/CotizacionesPanelPage';
@@ -51,7 +54,7 @@ const Navbar = () => {
     return (
         <nav className="navbar" style={{ padding: '1rem', backgroundColor: '#f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-                <Link to="/dashboard" style={{ marginRight: '1rem' }}>Dashboard</Link>
+                <Link to="/inicio" style={{ marginRight: '1rem' }}>Inicio</Link>
                 {user.rol && (user.rol.nombre === 'Vendedor' || user.rol.nombre === 'Gerencia') && (
                     <>
                         <Link to="/panel/solicitudes" style={{ marginRight: '1rem' }}>Solicitudes</Link>
@@ -75,10 +78,16 @@ const Navbar = () => {
                 {user.rol && user.rol.nombre === 'Despachador' && (
                     <Link to="/panel/despachos" style={{ marginRight: '1rem' }}>Despachos Pendientes</Link>
                 )}
+                {!user && (
+                    <Link to="/register" style={{ marginRight: '1rem' }}>Registrarse</Link>
+                )}
+                {user && user.rol && user.rol.nombre === 'Cliente' && (
+                    <Link to="/portal/mis-pedidos" style={{ marginRight: '1rem' }}>Mis Pedidos</Link>
+                )}
             </div>
             <div>
                 {user && user.rol && <span style={{ marginRight: '1rem' }}>Hola, {user.first_name} ({user.rol.nombre})</span>}
-                <button onClick={handleLogout}>Cerrar Sesión</button>
+                <button onClick={handleLogout}>{user ? 'Cerrar Sesión' : 'Iniciar Sesión'}</button>
             </div>
         </nav>
     );
@@ -98,12 +107,15 @@ function App() {
                         {/* --- RUTAS PÚBLICAS --- */}
                         <Route path="/" element={<HomePage />} />
                         <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
                         <Route path="/solicitar-cotizacion" element={<SolicitudPage />} />
                         <Route path="/portal/pedidos/:id_seguimiento" element={<PortalPage />} />
+                        <Route path="/portal/mis-pedidos" element={<ClientHistoryPage />} />
+                        <Route path="/portal/perfil" element={<ClientProfilePage />} />
 
                         {/* --- RUTAS PROTEGIDAS --- */}
                         <Route element={<ProtectedRoute />}>
-                            <Route path="/dashboard" element={<DashboardPage />} />
+                            <Route path="/inicio" element={<DashboardPage />} />
                             <Route path="/panel/solicitudes" element={<SolicitudesPanelPage />} />
                             <Route path="/panel/cotizacion/:pedidoId" element={<CotizacionDetailPage />} />
                             <Route path="/panel/cotizaciones" element={<CotizacionesPanelPage />} />
@@ -117,7 +129,7 @@ function App() {
                         </Route>
 
                         {/* Redirección por defecto */}
-                        <Route path="*" element={token ? <Navigate to="/dashboard" /> : <Navigate to="/" />} />
+                        <Route path="*" element={token ? <Navigate to="/inicio" /> : <Navigate to="/" />} />
                     </Routes>
                 </main>
             </Router>

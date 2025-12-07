@@ -17,7 +17,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from usuarios.views import MeView
+from usuarios.views import MeView, ClientRegisterAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +27,7 @@ urlpatterns = [
 
     # Endpoints de la app 'usuarios'
     path('api/users/me/', MeView.as_view(), name='user_me'),
+    path('api/register/', ClientRegisterAPIView.as_view(), name='client_register'),
 
     # Endpoints de la app 'gestion'
     path('api/', include('gestion.urls')),

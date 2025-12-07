@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import PaginationControl from '../../components/common/PaginationControl';
 
 const CotizacionesPanelPage = () => {
     const [cotizaciones, setCotizaciones] = useState([]);
@@ -216,7 +217,7 @@ const CotizacionesPanelPage = () => {
                                             <td className="px-4">
                                                 <span className="badge bg-warning text-dark">#{cotizacion.id}</span>
                                             </td>
-                                            <td><strong>{cotizacion.cliente.nombre}</strong></td>
+                                            <td><strong>{cotizacion.cliente.nombres} {cotizacion.cliente.apellidos}</strong></td>
                                             <td>{cotizacion.cliente.empresa || '-'}</td>
                                             <td>
                                                 <small>{new Date(cotizacion.fecha_actualizacion).toLocaleDateString('es-ES')}</small>
@@ -263,27 +264,11 @@ const CotizacionesPanelPage = () => {
                     </div>
 
                     {totalPages > 1 && (
-                        <nav className="mt-4">
-                            <ul className="pagination justify-content-center">
-                                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                    <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>
-                                        <i className="bi bi-chevron-left"></i>
-                                    </button>
-                                </li>
-                                {[...Array(totalPages)].map((_, i) => (
-                                    <li key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
-                                        <button className="page-link" onClick={() => setCurrentPage(i + 1)}>
-                                            {i + 1}
-                                        </button>
-                                    </li>
-                                ))}
-                                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                    <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>
-                                        <i className="bi bi-chevron-right"></i>
-                                    </button>
-                                </li>
-                            </ul>
-                        </nav>
+                        <PaginationControl
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
                     )}
                 </>
             )}

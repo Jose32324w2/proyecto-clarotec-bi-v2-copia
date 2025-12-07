@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Modal, Button } from 'react-bootstrap';
+import PaginationControl from '../../components/common/PaginationControl';
 
 const COURIERS_LABELS = {
     'STARKEN': 'Starken',
@@ -461,27 +462,11 @@ const DespachosPanelPage = () => {
                     </div>
 
                     {totalPages > 1 && (
-                        <nav className="mt-4">
-                            <ul className="pagination justify-content-center">
-                                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                    <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>
-                                        <i className="bi bi-chevron-left"></i>
-                                    </button>
-                                </li>
-                                {[...Array(totalPages)].map((_, i) => (
-                                    <li key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
-                                        <button className="page-link" onClick={() => setCurrentPage(i + 1)}>
-                                            {i + 1}
-                                        </button>
-                                    </li>
-                                ))}
-                                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                    <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>
-                                        <i className="bi bi-chevron-right"></i>
-                                    </button>
-                                </li>
-                            </ul>
-                        </nav>
+                        <PaginationControl
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
                     )}
                 </>
             )}

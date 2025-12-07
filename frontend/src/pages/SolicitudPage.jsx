@@ -8,6 +8,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../hooks/useAuth';
 import LinkInput from '../components/quotation/LinkInput';
 import ManualInput from '../components/quotation/ManualInput';
 import CatalogCard from '../components/quotation/CatalogCard';
@@ -18,6 +19,7 @@ import { REGIONES_Y_COMUNAS } from '../data/locations';
 
 const SolicitudPage = () => {
     const { cart, clearCart } = useCart();
+    const { user } = useAuth();
     const [frequentProducts, setFrequentProducts] = useState([]);
     const [loadingProducts, setLoadingProducts] = useState(true);
 
@@ -48,6 +50,18 @@ const SolicitudPage = () => {
         fetchProducts();
     }, []);
 
+    // Pre-fill user data if logged in
+    useEffect(() => {
+        if (user) {
+            setClientData(prev => ({
+                ...prev,
+                nombres: user.first_name || '',
+                apellidos: user.last_name || '',
+                email: user.email || ''
+            }));
+        }
+    }, [user]);
+
     const handleClientChange = (e) => {
         const { name, value } = e.target;
 
@@ -67,7 +81,8 @@ const SolicitudPage = () => {
 
         const payload = {
             cliente: {
-                nombre: clientData.nombre,
+                nombres: clientData.nombres,
+                apellidos: clientData.apellidos,
                 email: clientData.email,
                 empresa: clientData.empresa,
                 telefono: clientData.telefono
@@ -87,7 +102,7 @@ const SolicitudPage = () => {
             await axios.post('http://127.0.0.1:8000/api/solicitudes/', payload);
             setSubmitStatus({ loading: false, success: true, error: '' });
             clearCart();
-            setClientData({ nombre: '', email: '', empresa: '', telefono: '', region: '', comuna: '' });
+            setClientData({ nombres: '', apellidos: '', email: '', empresa: '', telefono: '', region: '', comuna: '' });
             setComunasDisponibles([]);
         } catch (error) {
             console.error("Error submitting request:", error);
@@ -164,10 +179,20 @@ const SolicitudPage = () => {
                                 <div className="card-body">
                                     <h6 className="card-title mb-3">Datos de Contacto</h6>
                                     <div className="mb-2">
-                                        <input
-                                            type="text" className="form-control form-control-sm" placeholder="Nombre Completo *"
-                                            name="nombre" value={clientData.nombre} onChange={handleClientChange} required
-                                        />
+                                        <div className="row g-2">
+                                            <div className="col-6">
+                                                <input
+                                                    type="text" className="form-control form-control-sm" placeholder="Nombres *"
+                                                    name="nombres" value={clientData.nombres} onChange={handleClientChange} required
+                                                />
+                                            </div>
+                                            <div className="col-6">
+                                                <input
+                                                    type="text" className="form-control form-control-sm" placeholder="Apellidos *"
+                                                    name="apellidos" value={clientData.apellidos} onChange={handleClientChange} required
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="mb-2">
                                         <input
@@ -221,7 +246,7 @@ const SolicitudPage = () => {
 
                                     <button
                                         onClick={handleSubmit}
-                                        disabled={cart.length === 0 || !clientData.nombre || !clientData.email || submitStatus.loading}
+                                        disabled={cart.length === 0 || !clientData.nombres || !clientData.apellidos || !clientData.email || !clientData.region || !clientData.comuna || submitStatus.loading}
                                         className="btn btn-success w-100 py-2 fw-bold"
                                     >
                                         {submitStatus.loading ? 'Enviando...' : 'Solicitar Cotización Formal →'}

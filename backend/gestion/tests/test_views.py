@@ -26,8 +26,8 @@ class TestClientRetentionView:
         self.client.force_authenticate(user=self.user)
 
         # Create some data
-        Cliente.objects.create(nombre="C1", email="c1@test.com")
-        Cliente.objects.create(nombre="C2", email="c2@test.com")
+        Cliente.objects.create(nombres="C1", apellidos="Test", email="c1@test.com")
+        Cliente.objects.create(nombres="C2", apellidos="Test", email="c2@test.com")
 
     def test_get_retention_data(self):
         url = reverse('bi-retention')
@@ -44,4 +44,4 @@ class TestClientRetentionView:
 
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data['clients']) == 1
-        assert response.data['clients'][0]['nombre'] == "C1"
+        assert response.data['clients'][0]['nombre'] == "C1 Test"

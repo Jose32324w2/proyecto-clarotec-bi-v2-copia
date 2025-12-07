@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from usuarios.models import Roles
 
+
 class Command(BaseCommand):
     help = 'Crea usuario de prueba para Cypress'
 
@@ -9,7 +10,7 @@ class Command(BaseCommand):
         User = get_user_model()
         email = 'admin@clarotec.cl'
         password = 'admin123'
-        
+
         # Asegurar que el rol existe
         rol, _ = Roles.objects.get_or_create(nombre='Gerencia')
 

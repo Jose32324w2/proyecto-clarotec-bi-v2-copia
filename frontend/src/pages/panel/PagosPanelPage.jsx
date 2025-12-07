@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 import { Modal, Button } from 'react-bootstrap';
+import PaginationControl from '../../components/common/PaginationControl';
 
 const PagosPanelPage = () => {
     const [pedidos, setPedidos] = useState([]);
@@ -107,6 +108,38 @@ const PagosPanelPage = () => {
         }
     };
 
+    const handleRechazarPago = async (pedidoId) => {
+        if (!window.confirm(`⚠️ ¿Realmente deseas RECHAZAR el pago del pedido #${pedidoId}?\nSe enviará una notificación al cliente.`)) {
+            return;
+        }
+
+        setUpdatingId(pedidoId);
+
+        try {
+            const token = localStorage.getItem('accessToken');
+            await axios.post(`http://127.0.0.1:8000/api/pedidos/${pedidoId}/rechazar-pago/`, {}, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            // Eliminar de la lista local si estamos en pendientes
+            if (activeTab === 'pendientes') {
+                setPedidos(prevPedidos => prevPedidos.filter(p => p.id !== pedidoId));
+                setFilteredPedidos(prevPedidos => prevPedidos.filter(p => p.id !== pedidoId));
+            } else {
+                fetchPedidos();
+            }
+
+            showToast('success', `Pago rechazado para el pedido #${pedidoId}.`);
+            setShowModal(false); // Cerrar modal si se hizo desde ahí
+
+        } catch (err) {
+            console.error("Error al rechazar el pago:", err.response?.data?.error || err.message);
+            showToast('error', `Error al rechazar pago: ${err.response?.data?.error || 'Error desconocido'}`);
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+
     const showToast = (type, message) => {
         const toast = document.createElement('div');
         toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed top-0 end-0 m-3`;
@@ -137,10 +170,12 @@ const PagosPanelPage = () => {
     const getEstadoBadge = (estado) => {
         switch (estado) {
             case 'aceptado': return <span className="badge bg-info text-dark">Pendiente Pago</span>;
-            case 'pago_confirmado': return <span className="badge bg-success">Pagado</span>;
-            case 'despachado': return <span className="badge bg-primary">Despachado</span>;
-            case 'completado': return <span className="badge bg-secondary">Completado</span>;
             case 'rechazado': return <span className="badge bg-danger">Rechazado</span>;
+            // Para fines de PAGOS, despachado y completado cuentan como PAGADO
+            case 'pago_confirmado':
+            case 'despachado':
+            case 'completado':
+                return <span className="badge bg-success">Pagado</span>;
             default: return <span className="badge bg-secondary">{estado}</span>;
         }
     };
@@ -277,7 +312,7 @@ const PagosPanelPage = () => {
                                             <td className="px-4">
                                                 <span className="badge bg-success">#{pedido.id}</span>
                                             </td>
-                                            <td><strong>{pedido.cliente.nombre}</strong></td>
+                                            <td><strong>{pedido.cliente.nombres} {pedido.cliente.apellidos}</strong></td>
                                             <td>{pedido.cliente.empresa || '-'}</td>
                                             <td>
                                                 <small>{new Date(pedido.fecha_actualizacion).toLocaleDateString('es-ES')}</small>
@@ -302,18 +337,28 @@ const PagosPanelPage = () => {
                                                     </button>
 
                                                     {activeTab === 'pendientes' && (
-                                                        <button
-                                                            onClick={() => handleConfirmarPago(pedido.id)}
-                                                            disabled={updatingId === pedido.id}
-                                                            className="btn btn-sm btn-success ms-1"
-                                                            title="Confirmar Pago"
-                                                        >
-                                                            {updatingId === pedido.id ? (
-                                                                <span className="spinner-border spinner-border-sm"></span>
-                                                            ) : (
-                                                                <i className="bi bi-check-lg"></i>
-                                                            )}
-                                                        </button>
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleRechazarPago(pedido.id)}
+                                                                disabled={updatingId === pedido.id}
+                                                                className="btn btn-sm btn-danger ms-1"
+                                                                title="Rechazar Pago"
+                                                            >
+                                                                <i className="bi bi-x-lg"></i>
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleConfirmarPago(pedido.id)}
+                                                                disabled={updatingId === pedido.id}
+                                                                className="btn btn-sm btn-success ms-1"
+                                                                title="Confirmar Pago"
+                                                            >
+                                                                {updatingId === pedido.id ? (
+                                                                    <span className="spinner-border spinner-border-sm"></span>
+                                                                ) : (
+                                                                    <i className="bi bi-check-lg"></i>
+                                                                )}
+                                                            </button>
+                                                        </>
                                                     )}
                                                 </div>
                                             </td>
@@ -325,27 +370,11 @@ const PagosPanelPage = () => {
                     </div>
 
                     {totalPages > 1 && (
-                        <nav className="mt-4">
-                            <ul className="pagination justify-content-center">
-                                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                    <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>
-                                        <i className="bi bi-chevron-left"></i>
-                                    </button>
-                                </li>
-                                {[...Array(totalPages)].map((_, i) => (
-                                    <li key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
-                                        <button className="page-link" onClick={() => setCurrentPage(i + 1)}>
-                                            {i + 1}
-                                        </button>
-                                    </li>
-                                ))}
-                                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                    <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>
-                                        <i className="bi bi-chevron-right"></i>
-                                    </button>
-                                </li>
-                            </ul>
-                        </nav>
+                        <PaginationControl
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
                     )}
                 </>
             )}
@@ -361,7 +390,7 @@ const PagosPanelPage = () => {
                             <div className="row mb-4">
                                 <div className="col-md-6">
                                     <h6 className="text-muted mb-2">Información del Cliente</h6>
-                                    <p className="mb-1"><strong>Nombre:</strong> {selectedPedido.cliente.nombre}</p>
+                                    <p className="mb-1"><strong>Nombre:</strong> {selectedPedido.cliente.nombres} {selectedPedido.cliente.apellidos}</p>
                                     <p className="mb-1"><strong>Empresa:</strong> {selectedPedido.cliente.empresa || 'N/A'}</p>
                                     <p className="mb-1"><strong>Email:</strong> {selectedPedido.cliente.email}</p>
                                     <p className="mb-0"><strong>Teléfono:</strong> {selectedPedido.cliente.telefono || 'N/A'}</p>
@@ -407,15 +436,24 @@ const PagosPanelPage = () => {
                         Cerrar
                     </Button>
                     {activeTab === 'pendientes' && selectedPedido && (
-                        <Button
-                            variant="success"
-                            onClick={() => {
-                                handleCloseModal();
-                                handleConfirmarPago(selectedPedido.id);
-                            }}
-                        >
-                            Confirmar Pago
-                        </Button>
+                        <>
+                            <Button
+                                variant="danger"
+                                className="me-auto"
+                                onClick={() => handleRechazarPago(selectedPedido.id)}
+                            >
+                                Rechazar Pago
+                            </Button>
+                            <Button
+                                variant="success"
+                                onClick={() => {
+                                    handleCloseModal();
+                                    handleConfirmarPago(selectedPedido.id);
+                                }}
+                            >
+                                Confirmar Pago
+                            </Button>
+                        </>
                     )}
                 </Modal.Footer>
             </Modal>

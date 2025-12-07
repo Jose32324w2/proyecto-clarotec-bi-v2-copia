@@ -19,7 +19,21 @@ class RolSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     rol = RolSerializer(read_only=True)
+    cliente_data = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'rol']
+        fields = ['id', 'first_name', 'last_name', 'email', 'rol', 'cliente_data']
+
+    def get_cliente_data(self, obj):
+        # Evitar import circular
+        from gestion.models import Cliente
+        try:
+            cliente = Cliente.objects.get(email=obj.email)
+            return {
+                'id': cliente.id,
+                'empresa': cliente.empresa,
+                'telefono': cliente.telefono
+            }
+        except Cliente.DoesNotExist:
+            return None

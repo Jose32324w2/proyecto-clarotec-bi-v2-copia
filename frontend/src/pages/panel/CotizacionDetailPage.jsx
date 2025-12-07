@@ -271,7 +271,7 @@ const CotizacionDetailPage = () => {
                             <h5 className="mb-0">Datos del Cliente</h5>
                         </div>
                         <div className="card-body">
-                            <p className="mb-1"><strong>Nombre:</strong> {pedido.cliente.nombre}</p>
+                            <p className="mb-1"><strong>Nombre:</strong> {pedido.cliente.nombres} {pedido.cliente.apellidos}</p>
                             <p className="mb-1"><strong>Empresa:</strong> {pedido.cliente.empresa || 'N/A'}</p>
                             <p className="mb-0"><strong>Email:</strong> {pedido.cliente.email}</p>
                         </div>

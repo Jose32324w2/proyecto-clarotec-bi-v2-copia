@@ -8,8 +8,11 @@
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const HomePage = () => {
+    const { user } = useAuth();
+
     return (
         <div className="bg-white">
             {/* Hero Section */}
@@ -41,6 +44,11 @@ const HomePage = () => {
                                 <Link to="/solicitar-cotizacion" className="btn btn-success btn-lg px-5 py-3 fw-bold shadow-lg">
                                     <i className="bi bi-box-seam me-2"></i> Iniciar Pedido
                                 </Link>
+                                {!user && (
+                                    <Link to="/register" className="btn btn-light btn-lg px-5 py-3 fw-bold shadow-lg text-dark">
+                                        <i className="bi bi-person-plus me-2"></i> Registrarse
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     </div>
