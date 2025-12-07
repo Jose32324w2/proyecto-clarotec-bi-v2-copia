@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from gestion.models import Cliente, Pedido, ItemsPedido
 
+
 class Command(BaseCommand):
     help = 'Muestra los últimos 5 registros importados para verificación'
 
@@ -16,6 +17,7 @@ class Command(BaseCommand):
 
             f.write("\n=== ÚLTIMOS 5 ITEMS ===\n")
             for i in ItemsPedido.objects.order_by('-id')[:5]:
-                f.write(f"ID: {i.id} | Pedido ID: {i.pedido.id} | Desc: {i.descripcion[:30]}... | Cant: {i.cantidad} | Venta Unit: ${i.precio_unitario} | Costo Unit: ${i.precio_compra} | Subtotal: ${i.subtotal}\n")
-        
+                f.write(
+                    f"ID: {i.id} | Pedido ID: {i.pedido.id} | Desc: {i.descripcion[:30]}... | Cant: {i.cantidad} | Venta Unit: ${i.precio_unitario} | Costo Unit: ${i.precio_compra} | Subtotal: ${i.subtotal}\n")
+
         self.stdout.write("Verificación guardada en import_verification.txt")

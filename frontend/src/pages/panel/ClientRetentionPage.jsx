@@ -1,3 +1,16 @@
+/**
+ * Dashboard de Retención de Clientes (Churn).
+ * 
+ * PROPÓSITO:
+ * - Visualizar clientes en riesgo de fuga o perdidos.
+ * - Proveer herramientas para contactar clientes (Email) y actualizar su estado.
+ * - Mostrar KPIs visuales (Gráficos) sobre la distribución de clientes por región.
+ * 
+ * COMPONENTES:
+ * - Filtros: Región, Comuna, Fecha, Búsqueda.
+ * - Tabla: Lista de clientes con semáforo de riesgo.
+ * - Acciones: Botones para cambiar estado y enviar correos.
+ */
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Badge, Spinner, Alert, Button, Form, Toast, ToastContainer, Dropdown } from 'react-bootstrap';
 import axios from 'axios';

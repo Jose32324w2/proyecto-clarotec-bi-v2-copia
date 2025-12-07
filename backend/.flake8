@@ -1,0 +1,13 @@
+[flake8]
+# Exclusiones estándar: .git, cache, migraciones y entorno virtual
+exclude = .git,__pycache__,migrations,venv,env
+
+# Longitud máxima de línea (PEP 8 recomienda 79, pero 120 es común en equipos modernos)
+max-line-length = 120
+
+# Errores ignorados (Justificación):
+# E203: Blancos antes de ':' (conflicto con Black formatter)
+# E303: Demasiadas líneas en blanco (estilo permisivo)
+# W292: Falta línea nueva al final del archivo (no crítico)
+# E501: Línea demasiado larga (ya manejado por max-line-length, redundante)
+extend-ignore = E203, E303, W292, E501

@@ -1,0 +1,203 @@
+﻿Run started:2025-12-06 19:04:14.496451+00:00
+
+Test results:
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'django-insecure-o&&a**dkxtt+&1i7j37uv2!gtjorpp5a$ju9)$5_v6%bkbg$2s'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b105_hardcoded_password_string.html
+   Location: .\clarotec_api\settings.py:25:13
+24	# SECURITY WARNING: keep the secret key used in production secret!
+25	SECRET_KEY = 'django-insecure-o&&a**dkxtt+&1i7j37uv2!gtjorpp5a$ju9)$5_v6%bkbg$2s'
+26	
+
+--------------------------------------------------
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'jtgp lpwo bzun gdrc'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b105_hardcoded_password_string.html
+   Location: .\clarotec_api\settings.py:178:22
+177	EMAIL_HOST_USER = 'correoclarotec@gmail.com'
+178	EMAIL_HOST_PASSWORD = 'jtgp lpwo bzun gdrc'  # Contrase±a de aplicaci≤n
+179	DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+--------------------------------------------------
+>> Issue: [B311:blacklist] Standard pseudo-random generators are not suitable for security/cryptographic purposes.
+   Severity: Low   Confidence: High
+   CWE: CWE-330 (https://cwe.mitre.org/data/definitions/330.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/blacklists/blacklist_calls.html#b311-random
+   Location: .\gestion\management\commands\import_historical_data.py:149:36
+148	                    # Fecha despacho aleatoria (3-8 dφas despuΘs)
+149	                    dias_despacho = random.randint(3, 8)
+150	                    fecha_despacho = fecha_solicitud + timedelta(days=dias_despacho)
+
+--------------------------------------------------
+>> Issue: [B311:blacklist] Standard pseudo-random generators are not suitable for security/cryptographic purposes.
+   Severity: Low   Confidence: High
+   CWE: CWE-330 (https://cwe.mitre.org/data/definitions/330.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/blacklists/blacklist_calls.html#b311-random
+   Location: .\gestion\management\commands\import_historical_data.py:165:43
+164	                    # Seleccionar uno aleatoriamente
+165	                    selected_courier_key = random.choice(courier_keys)
+166	                    selected_courier_data = COURIERS[selected_courier_key]
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_models.py:13:4
+12	    )
+13	    assert cliente.nombre == "Test Client"
+14	    assert cliente.email == "test@example.com"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_models.py:14:4
+13	    assert cliente.nombre == "Test Client"
+14	    assert cliente.email == "test@example.com"
+15	    assert cliente.retention_status == "pending"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_models.py:15:4
+14	    assert cliente.email == "test@example.com"
+15	    assert cliente.retention_status == "pending"
+16	    assert cliente.last_retention_email_sent_at is None
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_models.py:16:4
+15	    assert cliente.retention_status == "pending"
+16	    assert cliente.last_retention_email_sent_at is None
+17	
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_models.py:30:4
+29	
+30	    assert cliente.retention_status == "contacted"
+31	    assert cliente.last_retention_email_sent_at is not None
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_models.py:31:4
+30	    assert cliente.retention_status == "contacted"
+31	    assert cliente.last_retention_email_sent_at is not None
+
+--------------------------------------------------
+>> Issue: [B106:hardcoded_password_funcarg] Possible hardcoded password: 'password123'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b106_hardcoded_password_funcarg.html
+   Location: .\gestion\tests\test_views.py:14:20
+13	        role, _ = Roles.objects.get_or_create(nombre='Gerencia')
+14	        self.user = User.objects.create_user(
+15	            email='admin@test.com',
+16	            password='password123',
+17	            rol=role
+18	        )
+19	        self.client.force_authenticate(user=self.user)
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_views.py:29:8
+28	
+29	        assert response.status_code == status.HTTP_200_OK
+30	        assert 'summary' in response.data
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_views.py:30:8
+29	        assert response.status_code == status.HTTP_200_OK
+30	        assert 'summary' in response.data
+31	        assert 'clients' in response.data
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_views.py:31:8
+30	        assert 'summary' in response.data
+31	        assert 'clients' in response.data
+32	        assert len(response.data['clients']) == 2
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_views.py:32:8
+31	        assert 'clients' in response.data
+32	        assert len(response.data['clients']) == 2
+33	
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_views.py:38:8
+37	
+38	        assert response.status_code == status.HTTP_200_OK
+39	        assert len(response.data['clients']) == 1
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_views.py:39:8
+38	        assert response.status_code == status.HTTP_200_OK
+39	        assert len(response.data['clients']) == 1
+40	        assert response.data['clients'][0]['nombre'] == "C1"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.2/plugins/b101_assert_used.html
+   Location: .\gestion\tests\test_views.py:40:8
+39	        assert len(response.data['clients']) == 1
+40	        assert response.data['clients'][0]['nombre'] == "C1"
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 2139
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 18
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 3
+		High: 15
+Files skipped (0):

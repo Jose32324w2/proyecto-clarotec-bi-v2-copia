@@ -1,3 +1,11 @@
+/**
+ * Panel de Administración Principal.
+ * 
+ * PROPÓSITO:
+ * - Hub central para empleados (Vendedores, Gerencia).
+ * - Renderiza tarjetas de acceso rápido según el ROL del usuario (RBAC).
+ * - Acceso a módulos de Pedidos, Pagos, Despachos y Clientes.
+ */
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';

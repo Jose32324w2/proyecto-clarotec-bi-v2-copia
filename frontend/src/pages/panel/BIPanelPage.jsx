@@ -1,3 +1,11 @@
+/**
+ * Panel de Inteligencia de Negocios (BI).
+ * 
+ * PROPÓSITO:
+ * - Dashboard principal de métricas y estadísticas.
+ * - Visualización de Rentabilidad, Volumen de Ventas y Productos Top.
+ * - Integración de gráficos interactivos (Recharts) con filtros dinámicos.
+ */
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Alert, Spinner, Form, Badge } from 'react-bootstrap';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, BarChart, Bar, AreaChart, Area, Brush, ReferenceLine } from 'recharts';

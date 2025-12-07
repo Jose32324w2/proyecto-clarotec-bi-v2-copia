@@ -1,3 +1,11 @@
+/**
+ * Portal de Seguimiento de Pedidos (Cliente).
+ * 
+ * PROPÓSITO:
+ * - Vista pública (protegida por UUID) para que el cliente vea el estado de su pedido.
+ * - Muestra línea de tiempo, detalles de productos y link de tracking de envío.
+ * - Permite subir comprobantes de pago.
+ */
 // frontend/src/pages/PortalPage.jsx
 
 import React, { useState, useEffect } from 'react';

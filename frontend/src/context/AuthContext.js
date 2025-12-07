@@ -1,3 +1,11 @@
+/**
+ * Contexto de Autenticación Global (Provider).
+ * 
+ * PROPÓSITO:
+ * - Mantiene el estado global del usuario (token, perfil, rol).
+ * - Provee funciones login/logout accesibles en toda la app.
+ * - Verifica la sesión al cargar la página (persistencia).
+ */
 // frontend/src/context/AuthContext.js
 
 import React, { createContext, useState, useEffect } from 'react';

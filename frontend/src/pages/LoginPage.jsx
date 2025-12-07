@@ -1,3 +1,10 @@
+/**
+ * Página de Inicio de Sesión.
+ * 
+ * PROPÓSITO:
+ * - Autenticar usuarios contra el Backend (JWT).
+ * - Gestionar errores de login y redirección post-login.
+ */
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LoginForm from '../components/auth/LoginForm';

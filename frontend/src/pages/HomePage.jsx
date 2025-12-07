@@ -1,3 +1,11 @@
+/**
+ * Landing Page (Página de Inicio).
+ * 
+ * PROPÓSITO:
+ * - Primera impresión para nuevos clientes.
+ * - Explica el modelo de negocio "Compras Técnicas".
+ * - Redirige a "Solicitar Cotización" o "Login".
+ */
 import React from 'react';
 import { Link } from 'react-router-dom';
 

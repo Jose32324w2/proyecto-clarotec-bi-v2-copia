@@ -4,6 +4,14 @@ const CartContext = createContext();
 
 export const useCart = () => useContext(CartContext);
 
+/**
+ * Contexto del Carrito de Compras.
+ * 
+ * PROPÓSITO:
+ * - Gestiona el estado temporal de los productos seleccionados por el cliente.
+ * - Persiste los datos en localStorage para no perder el carrito al refrescar.
+ * - Provee métodos: addItem, removeItem, updateItem, clearCart.
+ */
 export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState(() => {
         const savedCart = localStorage.getItem('clarotec_cart');

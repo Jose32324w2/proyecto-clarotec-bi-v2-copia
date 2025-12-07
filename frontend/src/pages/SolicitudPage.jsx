@@ -1,3 +1,11 @@
+/**
+ * Página de Solicitud de Cotización (Pública).
+ * 
+ * PROPÓSITO:
+ * - Permite a clientes nuevos o existentes pedir cotizaciones.
+ * - Integra 3 métodos de entrada: Link, Manual y Catálogo.
+ * - Gestiona el carrito de compras temporal antes de enviar al backend.
+ */
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import LinkInput from '../components/quotation/LinkInput';

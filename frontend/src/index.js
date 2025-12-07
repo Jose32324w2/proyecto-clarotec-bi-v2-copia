@@ -1,5 +1,12 @@
 // frontend/src/index.js
-
+/**
+ * Punto de Entrada de la Aplicación (Entry Point).
+ * 
+ * PROPÓSITO:
+ * - Renderiza el componente raíz (<App />) en el DOM.
+ * - Configura proveedores de contexto globales (AuthProvider).
+ * - Inicializa interceptores de Axios y métricas web.
+ */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';

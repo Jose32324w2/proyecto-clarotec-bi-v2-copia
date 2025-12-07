@@ -45,7 +45,7 @@ try:
             }
         )
         print(f"   Cliente: {cliente.id} (Creado: {created})")
-        
+
         print("2. Creando pedido...")
         pedido = Pedido.objects.create(
             cliente=cliente,
@@ -53,7 +53,7 @@ try:
             comuna='Test Comuna'
         )
         print(f"   Pedido: {pedido.id}")
-        
+
         print("3. Creando items...")
         for idx, item_data in enumerate(items_data):
             print(f"   3.{idx+1}. Creando item: {item_data['descripcion']}")
@@ -66,13 +66,13 @@ try:
                 producto_frecuente=None
             )
             print(f"        Item creado: {item.id}")
-        
+
         print("4. Verificando items guardados...")
         items_count = ItemsPedido.objects.filter(pedido=pedido).count()
         print(f"   Total items para pedido {pedido.id}: {items_count}")
-        
+
         print("✅ TRANSACCIÓN COMPLETADA")
-        
+
 except Exception as e:
     print(f"❌ ERROR: {e}")
     import traceback

@@ -1,5 +1,12 @@
 // frontend/src/App.jsx
-
+/**
+ * Componente Raíz de la Aplicación.
+ * 
+ * PROPÓSITO:
+ * - Define el enrutamiento principal (React Router) para toda la SPA.
+ * - Protege rutas privadas usando RequireAuth.
+ * - Gestiona la navegación global entre páginas públicas y el panel de administración.
+ */
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';

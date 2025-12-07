@@ -1,12 +1,21 @@
+"""
+Serializadores de Usuario.
+
+PROPOSITO:
+    Maneja la representación JSON de los usuarios y sus roles.
+    Utilizado principalmente para devolver datos del usuario actual (MeView).
+"""
 # backend/usuarios/serializers.py
 
 from rest_framework import serializers
 from .models import User, Roles
 
+
 class RolSerializer(serializers.ModelSerializer):
     class Meta:
         model = Roles
         fields = ['nombre']
+
 
 class UserSerializer(serializers.ModelSerializer):
     rol = RolSerializer(read_only=True)

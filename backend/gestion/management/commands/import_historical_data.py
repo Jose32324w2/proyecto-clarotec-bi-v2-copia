@@ -1,7 +1,17 @@
+"""
+Comando de Gestión: Importación de Datos Históricos (ETL).
+
+PROPOSITO:
+    Ejecuta el proceso ETL (Extracción, Transformación y Carga) desde un Excel.
+    Simula logística y costos de envío para datos históricos.
+    Puebla la base de datos para inicio del proyecto.
+    
+USO:
+    python manage.py import_historical_data
+"""
 import pandas as pd
 import uuid
 import os
-import json
 import random
 from decimal import Decimal
 from datetime import timedelta
@@ -9,7 +19,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 from gestion.models import Cliente, Pedido, ItemsPedido
-from gestion.services import ShippingCalculator
+
 
 class Command(BaseCommand):
     help = 'Importa datos históricos desde basis.xlsx con lógica de negocio completa (Logística simulada)'
@@ -31,21 +41,27 @@ class Command(BaseCommand):
         COMUNA_REGION_MAP = {}
         REGIONES_DATA = [
             {"region": "Arica y Parinacota", "comunas": ["Arica", "Putre", "General Lagos", "Camarones"]},
-            {"region": "Tarapacá", "comunas": ["Iquique", "Alto Hospicio", "Pozo Almonte", "Camiña", "Colchane", "Huara"]},
-            {"region": "Antofagasta", "comunas": ["Antofagasta", "Calama", "San Pedro de Atacama", "Taltal", "Tocopilla"]},
+            {"region": "Tarapacá", "comunas": ["Iquique", "Alto Hospicio",
+                                               "Pozo Almonte", "Camiña", "Colchane", "Huara"]},
+            {"region": "Antofagasta", "comunas": ["Antofagasta",
+                                                  "Calama", "San Pedro de Atacama", "Taltal", "Tocopilla"]},
             {"region": "Atacama", "comunas": ["Copiapó", "Vallenar", "Caldera", "Chañaral", "Diego de Almagro"]},
             {"region": "Coquimbo", "comunas": ["La Serena", "Coquimbo", "Ovalle", "Illapel", "Andacollo"]},
             {"region": "Valparaíso", "comunas": ["Valparaíso", "Viña del Mar", "San Antonio", "Quillota", "La Ligua"]},
-            {"region": "Metropolitana de Santiago", "comunas": ["Santiago", "Puente Alto", "Maipú", "San Bernardo", "Estación Central", "Las Condes", "Providencia", "Ñuñoa"]},
-            {"region": "Libertador General Bernardo O'Higgins", "comunas": ["Rancagua", "San Fernando", "Santa Cruz", "Rengo"]},
+            {"region": "Metropolitana de Santiago", "comunas": [
+                "Santiago", "Puente Alto", "Maipú", "San Bernardo", "Estación Central", "Las Condes", "Providencia", "Ñuñoa"]},
+            {"region": "Libertador General Bernardo O'Higgins", "comunas": [
+                "Rancagua", "San Fernando", "Santa Cruz", "Rengo"]},
             {"region": "Maule", "comunas": ["Talca", "Curicó", "Linares", "Cauquenes"]},
             {"region": "Ñuble", "comunas": ["Chillán", "San Carlos", "Coelemu", "San Nicolás", "Quillón"]},
             {"region": "Biobío", "comunas": ["Concepción", "Talcahuano", "Los Ángeles", "Chillán", "Cañete"]},
             {"region": "La Araucanía", "comunas": ["Temuco", "Angol", "Victoria", "Villarrica", "Pucón"]},
             {"region": "Los Ríos", "comunas": ["Valdivia", "La Unión", "Río Bueno", "Panguipulli"]},
             {"region": "Los Lagos", "comunas": ["Puerto Montt", "Osorno", "Ancud", "Castro", "Frutillar"]},
-            {"region": "Aysén del General Carlos Ibáñez del Campo", "comunas": ["Coyhaique", "Aysén", "Chile Chico", "Cochrane"]},
-            {"region": "Magallanes y de la Antártica Chilena", "comunas": ["Punta Arenas", "Puerto Natales", "Porvenir", "Puerto Williams"]}
+            {"region": "Aysén del General Carlos Ibáñez del Campo",
+                "comunas": ["Coyhaique", "Aysén", "Chile Chico", "Cochrane"]},
+            {"region": "Magallanes y de la Antártica Chilena", "comunas": [
+                "Punta Arenas", "Puerto Natales", "Porvenir", "Puerto Williams"]}
         ]
 
         for item in REGIONES_DATA:
@@ -61,11 +77,11 @@ class Command(BaseCommand):
             "Ñuble": "SUR", "Biobío": "SUR", "La Araucanía": "SUR", "Los Ríos": "SUR", "Los Lagos": "SUR",
             "Aysén del General Carlos Ibáñez del Campo": "EXTREMO", "Magallanes y de la Antártica Chilena": "EXTREMO"
         }
-        
+
         ZONA_PRECIOS = {
             'RM': 4500, 'CENTRO': 6500, 'NORTE': 8900, 'SUR': 7900, 'EXTREMO': 12500
         }
-        
+
         COURIERS = {
             'STARKEN': {'label': 'Starken', 'factor': 1.0},
             'CHILEXPRESS': {'label': 'Chilexpress', 'factor': 1.4},
@@ -80,13 +96,13 @@ class Command(BaseCommand):
                 try:
                     # 1. Extracción de Datos Crudos
                     usuario_raw = str(row.get('Usuario', '')).strip()
-                    nombre1_raw = str(row.get('Nombre 1', '')).strip() # Ubicación
+                    nombre1_raw = str(row.get('Nombre 1', '')).strip()  # Ubicación
                     movimiento_raw = str(row.get('Texto de clase-mov.', '')).strip()
                     fecha_raw = row.get('Fe.contab.')
                     material_raw = str(row.get('Texto breve de material', '')).strip()
                     cantidad_raw = float(row.get('Cantidad', 0))
                     doc_mat_raw = str(row.get('Doc.mat.', '')).strip()
-                    
+
                     # Limpieza de Importe
                     importe_val = 0.0
                     importe_raw = row.get('Importe ML', 0)
@@ -94,7 +110,7 @@ class Command(BaseCommand):
                         importe_raw = importe_raw.replace(',', '').replace('.', '')
                         try:
                             importe_val = float(importe_raw)
-                        except:
+                        except Exception:
                             importe_val = 0.0
                     else:
                         importe_val = float(importe_raw)
@@ -102,9 +118,9 @@ class Command(BaseCommand):
                     # 2. Cliente (Deducción)
                     if not usuario_raw or usuario_raw == 'nan':
                         usuario_raw = 'GENERICO'
-                    
+
                     email_gen = f"{usuario_raw}@gmail.com".lower()
-                    
+
                     if len(usuario_raw) > 1:
                         first_letter = usuario_raw[0].upper()
                         rest = usuario_raw[1:].title()
@@ -139,7 +155,7 @@ class Command(BaseCommand):
                         fecha_solicitud = timezone.now()
                     else:
                         fecha_solicitud = pd.to_datetime(fecha_raw)
-                    
+
                     # Fecha despacho aleatoria (3-8 días después)
                     dias_despacho = random.randint(3, 8)
                     fecha_despacho = fecha_solicitud + timedelta(days=dias_despacho)
@@ -147,15 +163,15 @@ class Command(BaseCommand):
                     # 6. Logística (Simulación)
                     zona_precio = REGION_ZONA_MAP.get(region_deducida, 'RM')
                     precio_base = ZONA_PRECIOS.get(zona_precio, 4500)
-                    
+
                     opciones_envio = {}
                     courier_keys = list(COURIERS.keys())
-                    
+
                     # Generar opciones
                     for key, data in COURIERS.items():
                         costo = int(precio_base * data['factor'])
                         opciones_envio[key] = costo
-                    
+
                     # Seleccionar uno aleatoriamente
                     selected_courier_key = random.choice(courier_keys)
                     selected_courier_data = COURIERS[selected_courier_key]
@@ -163,7 +179,7 @@ class Command(BaseCommand):
 
                     # 7. Crear/Obtener Pedido (Agrupado por Doc.mat. si existe)
                     numero_guia = doc_mat_raw if doc_mat_raw and doc_mat_raw != 'nan' else str(uuid.uuid4())
-                    
+
                     pedido, created = Pedido.objects.get_or_create(
                         numero_guia=numero_guia,
                         defaults={
@@ -179,21 +195,17 @@ class Command(BaseCommand):
                             'metodo_envio': selected_courier_key,
                             'opciones_envio': opciones_envio,
                             'fecha_despacho': fecha_despacho,
-                            'fecha_actualizacion': fecha_despacho # Se actualiza al despachar
+                            'fecha_actualizacion': fecha_despacho  # Se actualiza al despachar
                         }
                     )
-                    
+
                     if not created:
-                        # Si ya existe, actualizamos fecha para mantener consistencia del grupo
-                        # Usamos update para evitar auto_now
                         Pedido.objects.filter(id=pedido.id).update(
                             fecha_solicitud=fecha_solicitud,
                             fecha_actualizacion=fecha_despacho,
                             fecha_despacho=fecha_despacho
                         )
                     else:
-                        # Si es nuevo, TAMBIÉN forzamos las fechas con update porque auto_now_add/auto_now
-                        # ignoran los valores pasados en create/defaults para estos campos.
                         Pedido.objects.filter(id=pedido.id).update(
                             fecha_solicitud=fecha_solicitud,
                             fecha_actualizacion=fecha_despacho,
@@ -202,7 +214,7 @@ class Command(BaseCommand):
 
                     # 8. Crear Item y Finanzas
                     precio_unitario = importe_val / cantidad_raw if cantidad_raw > 0 else 0
-                    precio_compra = precio_unitario * 0.7 # Margen 30%
+                    precio_compra = precio_unitario * 0.7  # Margen 30%
 
                     ItemsPedido.objects.create(
                         pedido=pedido,
@@ -217,7 +229,8 @@ class Command(BaseCommand):
                     count_created += 1
 
                 except Exception as e:
-                    self.stdout.write(self.style.WARNING(f'Error en fila {index}: {e}'))
+                    self.stdout.write(self.style.WARNING(f'Fila {index}: Error procesando ({e}).'))
                     count_skipped += 1
 
-        self.stdout.write(self.style.SUCCESS(f'Proceso completado. Items creados: {count_created}. Errores/Saltados: {count_skipped}'))
+        self.stdout.write(self.style.SUCCESS(
+            f'Proceso completado. Items creados: {count_created}. Errores/Saltados: {count_skipped}'))

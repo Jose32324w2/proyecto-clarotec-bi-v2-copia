@@ -1,3 +1,12 @@
+"""
+Servicios de Lógica de Negocio (Backend).
+
+PROPOSITO:
+    Encapsula lógica compleja reutilizable que no pertenece a Modelos ni Vistas.
+    
+SERVICIOS:
+    - ShippingCalculator: Calcula costos de envío por región/comuna.
+"""
 # backend/gestion/services.py
 
 class ShippingCalculator:
@@ -11,7 +20,7 @@ class ShippingCalculator:
         'CENTRO': 6500,  # V, VI, VII
         'NORTE': 8900,   # XV, I, II, III, IV
         'SUR': 7900,     # VIII, IX, XIV, X
-        'EXTREMO': 12500 # XI, XII
+        'EXTREMO': 12500  # XI, XII
     }
 
     # Multiplicadores por Courier (Factor de servicio)
@@ -26,16 +35,16 @@ class ShippingCalculator:
     COMUNA_ZONA_MAP = {
         # RM
         'santiago': 'RM', 'providencia': 'RM', 'las condes': 'RM', 'maipu': 'RM', 'puente alto': 'RM',
-        
+
         # NORTE
         'arica': 'NORTE', 'iquique': 'NORTE', 'antofagasta': 'NORTE', 'copiapo': 'NORTE', 'la serena': 'NORTE',
-        
+
         # CENTRO
         'valparaiso': 'CENTRO', 'viña del mar': 'CENTRO', 'rancagua': 'CENTRO', 'talca': 'CENTRO',
-        
+
         # SUR
         'concepcion': 'SUR', 'temuco': 'SUR', 'valdivia': 'SUR', 'puerto montt': 'SUR',
-        
+
         # EXTREMO
         'coyhaique': 'EXTREMO', 'punta arenas': 'EXTREMO'
     }
@@ -45,9 +54,9 @@ class ShippingCalculator:
         """ Normaliza el nombre de la comuna y busca su zona. Default: RM """
         if not comuna_nombre:
             return 'RM'
-        
+
         normalized = comuna_nombre.lower().strip()
-        return cls.COMUNA_ZONA_MAP.get(normalized, 'RM') # Default a RM si no encuentra
+        return cls.COMUNA_ZONA_MAP.get(normalized, 'RM')  # Default a RM si no encuentra
 
     @classmethod
     def calcular_costo(cls, comuna, courier):

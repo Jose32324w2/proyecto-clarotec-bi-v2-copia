@@ -1,4 +1,15 @@
-# backend/clarotec_api/urls.py
+"""
+Configuración de URL principal del proyecto.
+
+PROPOSITO:
+    Punto de entrada para el enrutamiento de solicitudes HTTP.
+    Delega las rutas a las aplicaciones específicas (API, Admin, Auth).
+
+RUTAS PRINCIPALES:
+    - /admin/: Panel de administración de Django.
+    - /api/token/: Obtención y refresco de tokens JWT (Login).
+    - /api/: Rutas principales de la aplicación 'gestion' (Endpoints de negocio).
+"""
 
 from django.contrib import admin
 from django.urls import path, include
@@ -18,5 +29,5 @@ urlpatterns = [
     path('api/users/me/', MeView.as_view(), name='user_me'),
 
     # Endpoints de la app 'gestion'
-    path('api/', include('gestion.urls')), 
+    path('api/', include('gestion.urls')),
 ]

@@ -1,12 +1,28 @@
+"""
+Serializadores de Datos (DRF).
+
+PROPOSITO:
+    Convierte objetos complejos (Modelos Django) a formatos nativos (JSON) y viceversa.
+    Encapsula toda la validación de datos d entrada (Formularios).
+
+SERIALIZADORES CLAVE:
+    - SolicitudCreacionSerializer: Valida datos para nuevas cotizaciones.
+    - PedidoSerializer: Representación completa de un pedido.
+    - ClienteSerializer: Manejo de datos de clientes.
+    - KPI*: Serializadores ligeros para respuestas de Business Intelligence.
+"""
 from rest_framework import serializers
 from .models import Cliente, Pedido, ItemsPedido, ProductoFrecuente
 from django.db import transaction
 
 # 1. Serializers independientes (sin dependencias de otros serializers)
+
+
 class ProductoFrecuenteSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductoFrecuente
         fields = '__all__'
+
 
 class ClienteInputSerializer(serializers.Serializer):
     nombre = serializers.CharField(max_length=200)
@@ -14,22 +30,27 @@ class ClienteInputSerializer(serializers.Serializer):
     empresa = serializers.CharField(max_length=200, required=False, allow_blank=True)
     telefono = serializers.CharField(max_length=50, required=False, allow_blank=True)
 
+
 class ItemSolicitudInputSerializer(serializers.Serializer):
-    tipo = serializers.CharField(max_length=20) # LINK, MANUAL, CATALOGO
+    tipo = serializers.CharField(max_length=20)  # LINK, MANUAL, CATALOGO
     descripcion = serializers.CharField()
     cantidad = serializers.IntegerField(min_value=1)
     referencia = serializers.CharField(required=False, allow_blank=True)
     producto_id = serializers.IntegerField(required=False, allow_null=True)
+
 
 class ClienteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cliente
         fields = '__all__'
 
+
 class ItemsPedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemsPedido
-        fields = ['id', 'descripcion', 'cantidad', 'tipo_origen', 'referencia', 'producto_frecuente', 'precio_unitario', 'precio_compra', 'subtotal']
+        fields = ['id', 'descripcion', 'cantidad', 'tipo_origen', 'referencia',
+                  'producto_frecuente', 'precio_unitario', 'precio_compra', 'subtotal']
+
 
 class ItemsPedidoUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -42,6 +63,8 @@ class ItemsPedidoUpdateSerializer(serializers.ModelSerializer):
         }
 
 # 2. Serializers que dependen de los anteriores
+
+
 class SolicitudCreacionSerializer(serializers.Serializer):
     cliente = ClienteInputSerializer()
     items = serializers.ListField(child=ItemSolicitudInputSerializer())
@@ -104,6 +127,7 @@ class SolicitudCreacionSerializer(serializers.Serializer):
             traceback.print_exc()
             raise e
 
+
 class PedidoSerializer(serializers.ModelSerializer):
     cliente = ClienteSerializer(read_only=True)
     items = ItemsPedidoSerializer(many=True, read_only=True)
@@ -116,6 +140,7 @@ class PedidoSerializer(serializers.ModelSerializer):
             'transportista', 'numero_guia', 'region', 'comuna', 'metodo_envio',
             'nombre_transporte_custom', 'opciones_envio', 'items', 'id_seguimiento'
         ]
+
 
 class PedidoDetailUpdateSerializer(serializers.ModelSerializer):
     cliente = ClienteSerializer(read_only=True)
@@ -136,16 +161,17 @@ class PedidoDetailUpdateSerializer(serializers.ModelSerializer):
 
         instance.porcentaje_urgencia = validated_data.get('porcentaje_urgencia', instance.porcentaje_urgencia)
         instance.costo_envio_estimado = validated_data.get('costo_envio_estimado', instance.costo_envio_estimado)
-        
+
         # Nuevos campos de envío
         instance.region = validated_data.get('region', instance.region)
         instance.comuna = validated_data.get('comuna', instance.comuna)
         instance.metodo_envio = validated_data.get('metodo_envio', instance.metodo_envio)
-        instance.nombre_transporte_custom = validated_data.get('nombre_transporte_custom', instance.nombre_transporte_custom)
+        instance.nombre_transporte_custom = validated_data.get(
+            'nombre_transporte_custom', instance.nombre_transporte_custom)
         instance.opciones_envio = validated_data.get('opciones_envio', instance.opciones_envio)
-        
+
         instance.save()
-        
+
         print("Pedido principal actualizado con urgencia y envío.")
         print("Datos de ítems a procesar (items_data):", items_data)
 
@@ -156,10 +182,10 @@ class PedidoDetailUpdateSerializer(serializers.ModelSerializer):
             item_id = item_data.get('id')
             print(f"\nProcesando item ID: {item_id}")
             print(f"Datos del item: {item_data}")
-            
+
             if item_id and item_id in items_existentes:
                 item = items_existentes[item_id]
-                
+
                 # Actualizar cada campo explícitamente
                 if 'descripcion' in item_data:
                     item.descripcion = item_data['descripcion']
@@ -169,12 +195,13 @@ class PedidoDetailUpdateSerializer(serializers.ModelSerializer):
                     item.precio_unitario = item_data['precio_unitario']
                 if 'precio_compra' in item_data:
                     item.precio_compra = item_data['precio_compra']
-                
+
                 item.save()
             else:
                 print(f"Item ID {item_id} no encontrado en items existentes")
-        
+
         return instance
+
 
 class PedidoDetailSerializer(serializers.ModelSerializer):
     cliente = ClienteSerializer(read_only=True)

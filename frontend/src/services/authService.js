@@ -1,3 +1,11 @@
+/**
+ * Servicio de API de Autenticación.
+ * 
+ * PROPÓSITO:
+ * - Capa de comunicación directa con los endpoints de JWT del backend (/token/).
+ * - Gestiona almacenamiento de tokens en localStorage.
+ * - Incluye lógica de Refresh Token.
+ */
 // frontend/src/services/authService.js
 
 import axios from 'axios';

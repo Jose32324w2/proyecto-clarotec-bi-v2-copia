@@ -1,11 +1,19 @@
+"""
+Configuración del Panel Administrativo (Django Admin).
+
+PROPOSITO:
+    Personaliza la interfaz de administración para el modelo User personalizado.
+    Permite crear usuarios con contraseña y rol desde el admin.
+"""
 # backend/usuarios/admin.py
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django import forms # Importamos los formularios de Django
+from django import forms  # Importamos los formularios de Django
 from .models import User, Roles
 
 # Ya no necesitamos UserCreationForm ni UserChangeForm de django.contrib.auth.forms
+
 
 class UserAdminCreationForm(forms.ModelForm):
     """
@@ -34,13 +42,14 @@ class UserAdminCreationForm(forms.ModelForm):
             user.save()
         return user
 
+
 class UserAdmin(BaseUserAdmin):
     # Usa nuestro nuevo formulario de creación.
     add_form = UserAdminCreationForm
 
     # La configuración para la VISTA DE LISTA (correcta)
     list_display = ('email', 'first_name', 'last_name', 'is_staff', 'rol')
-    
+
     # La configuración para la VISTA DE EDICIÓN (correcta)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
@@ -48,7 +57,7 @@ class UserAdmin(BaseUserAdmin):
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'rol')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
-    
+
     # La configuración para la VISTA DE CREACIÓN (correcta)
     add_fieldsets = (
         (None, {
@@ -56,7 +65,7 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('email', 'first_name', 'last_name', 'rol', 'password', 'password2'),
         }),
     )
-    
+
     search_fields = ('email',)
     ordering = ('email',)
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'rol')

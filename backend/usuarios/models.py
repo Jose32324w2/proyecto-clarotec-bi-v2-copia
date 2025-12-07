@@ -1,7 +1,19 @@
+"""
+Modelos de Usuario y Autenticación.
+
+PROPOSITO:
+    Extiende el modelo de usuario por defecto de Django (AbstractUser).
+    Gestiona la identidad, roles y permisos dentro del sistema.
+
+MODELOS:
+    - User: Usuario personalizado (login con email).
+    - Roles: Definición de perfiles (Vendedor, Gerencia, Cliente).
+"""
 # backend/usuarios/models.py
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+
 
 class Roles(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
@@ -15,6 +27,7 @@ class UserManager(BaseUserManager):
     Manager personalizado para el modelo User donde el email es el identificador único
     en lugar del username.
     """
+
     def create_user(self, email, password, **extra_fields):
         """
         Crea y guarda un User con el email y password dados.
@@ -23,7 +36,7 @@ class UserManager(BaseUserManager):
             raise ValueError('El Email debe ser proporcionado')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.set_password(password) # Hashea la contraseña
+        user.set_password(password)  # Hashea la contraseña
         user.save(using=self._db)
         return user
 
@@ -39,10 +52,11 @@ class UserManager(BaseUserManager):
             raise ValueError('Superuser debe tener is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser debe tener is_superuser=True.')
-        
+
         return self.create_user(email, password, **extra_fields)
-    
+
 # backend/usuarios/models.py
+
 
 class User(AbstractUser):
     # ... (los campos que ya tenías: username=None, email, rol) ...
@@ -53,9 +67,7 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
-
-    objects = UserManager() # Le decimos a Django que use nuestro manager
-
+    objects = UserManager()  # Le decimos a Django que use nuestro manager
 
     def __str__(self):
         return self.email
