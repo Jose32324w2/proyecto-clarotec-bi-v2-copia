@@ -38,7 +38,9 @@ from .views import (
     SendRetentionEmailView,
     UpdateClientStatusView,
     RechazarPagoView,
-    ClientHistoryAPIView
+    ClientHistoryAPIView,
+    BIFilterOptionsView,
+    RechazarPedidoView
 )
 
 
@@ -59,6 +61,7 @@ urlpatterns = [
     path('pedidos/<int:pk>/', PedidoDetailAPIView.as_view(), name='panel-pedido-detail'),
     path('pedidos/<int:pk>/enviar-cotizacion/', EnviarCotizacionAPIView.as_view(), name='enviar-cotizacion'),
     path('pedidos/<int:pk>/pdf/', GenerarPDFAPIView.as_view(), name='generar-pdf'),
+    path('pedidos/<int:pk>/rechazar/', RechazarPedidoView.as_view(), name='pedidos-rechazar-manual'),
 
     # Business Intelligence
     path('bi/retention/', ClientRetentionView.as_view(), name='bi-retention'),
@@ -99,4 +102,5 @@ urlpatterns = [
     path('bi/kpis/', MetricasKPIView.as_view(), name='bi-kpis'),
     path('bi/dashboard-stats/', BIDashboardDataView.as_view(), name='bi-dashboard-stats'),
     path('bi/info-logistica/', InfoLogisticaAPIView.as_view(), name='bi-info-logistica'),
+    path('bi/filter-options/', BIFilterOptionsView.as_view(), name='bi-filter-options'),
 ]

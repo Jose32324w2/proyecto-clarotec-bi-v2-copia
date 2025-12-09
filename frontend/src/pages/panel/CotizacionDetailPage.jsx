@@ -243,6 +243,9 @@ const CotizacionDetailPage = () => {
     if (error) return <div className="alert alert-danger m-5">{error}</div>;
     if (!pedido) return <div className="alert alert-warning m-5">No se encontró el pedido.</div>;
 
+    // Bloquear edición si ya fue enviada (cotizado) o está en estados finales
+    const isReadOnly = ['cotizado', 'aceptado', 'pago_confirmado', 'despachado', 'completado', 'rechazado'].includes(pedido.estado);
+
     return (
         <div className="container mt-4 mb-5">
             <Notification
@@ -250,6 +253,16 @@ const CotizacionDetailPage = () => {
                 type={notification.type}
                 onClear={() => setNotification({ message: '', type: '' })}
             />
+
+            {isReadOnly && (
+                <div className="alert alert-warning d-flex align-items-center mb-4" role="alert">
+                    <i className="bi bi-lock-fill fs-4 me-3"></i>
+                    <div>
+                        <strong>Modo Solo Lectura</strong>
+                        <div className="small">Esta cotización se encuentra en estado <strong>{pedido.estado.toUpperCase()}</strong> y no se puede modificar.</div>
+                    </div>
+                </div>
+            )}
 
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h1>Cotizar Pedido #{pedido.id}</h1>
@@ -288,6 +301,7 @@ const CotizacionDetailPage = () => {
                                     className="form-select"
                                     value={region}
                                     onChange={handleRegionChange}
+                                    disabled={isReadOnly}
                                 >
                                     <option value="">Seleccione Región...</option>
                                     {REGIONES_Y_COMUNAS.map(r => (
@@ -302,7 +316,7 @@ const CotizacionDetailPage = () => {
                                     className="form-select"
                                     value={comuna}
                                     onChange={(e) => setComuna(e.target.value)}
-                                    disabled={!region}
+                                    disabled={!region || isReadOnly}
                                 >
                                     <option value="">Seleccione Comuna...</option>
                                     {comunasDisponibles.map(c => (
@@ -314,7 +328,7 @@ const CotizacionDetailPage = () => {
                             <button
                                 className="btn btn-info w-100 text-white mb-3"
                                 onClick={handleCalculateShipping}
-                                disabled={calculatingShipment || !comuna}
+                                disabled={calculatingShipment || !comuna || isReadOnly}
                             >
                                 {calculatingShipment ? 'Calculando...' : 'Calcular Tarifas Disponibles'}
                             </button>
@@ -346,6 +360,7 @@ const CotizacionDetailPage = () => {
                                     className="form-control"
                                     value={customTransport}
                                     onChange={(e) => setCustomTransport(e.target.value)}
+                                    disabled={isReadOnly}
                                     placeholder="Ej: Retiro en tienda..."
                                 />
                                 <small className="text-muted">Si ingresa texto aquí, el cliente verá esta opción como "Otro".</small>
@@ -367,6 +382,7 @@ const CotizacionDetailPage = () => {
                                     style={{ width: '80px' }}
                                     value={globalMargin}
                                     onChange={handleGlobalMarginChange}
+                                    disabled={isReadOnly}
                                     placeholder="0"
                                     title="Ingresa un % para calcular automáticamente el precio de venta"
                                 />
@@ -395,6 +411,7 @@ const CotizacionDetailPage = () => {
                                                         value={item.cantidad}
                                                         onChange={(e) => handleItemChange(item.id, 'cantidad', parseInt(e.target.value, 10))}
                                                         min="1"
+                                                        disabled={isReadOnly}
                                                     />
                                                 </td>
                                                 <td>
@@ -403,6 +420,7 @@ const CotizacionDetailPage = () => {
                                                         value={item.precio_compra}
                                                         onChange={(val) => handleItemChange(item.id, 'precio_compra', val)}
                                                         placeholder="Costo..."
+                                                        disabled={isReadOnly}
                                                     />
                                                 </td>
                                                 <td>
@@ -411,6 +429,7 @@ const CotizacionDetailPage = () => {
                                                         value={item.precio_unitario}
                                                         onChange={(val) => handleItemChange(item.id, 'precio_unitario', val)}
                                                         placeholder="Precio..."
+                                                        disabled={isReadOnly}
                                                     />
                                                 </td>
                                                 <td className="text-end">
@@ -439,6 +458,7 @@ const CotizacionDetailPage = () => {
                                             step="0.1"
                                             value={pedido.porcentaje_urgencia}
                                             onChange={(e) => handlePedidoChange('porcentaje_urgencia', e.target.value)}
+                                            disabled={isReadOnly}
                                         />
                                     </div>
 
@@ -501,7 +521,8 @@ const CotizacionDetailPage = () => {
                         <button
                             className="btn btn-primary"
                             onClick={handleSaveChanges}
-                            disabled={saving || sendingEmail}
+                            onClick={handleSaveChanges}
+                            disabled={saving || sendingEmail || isReadOnly}
                         >
                             <i className="bi bi-save me-1"></i>
                             {saving ? 'Guardando...' : 'Guardar Cambios'}

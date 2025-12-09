@@ -16,11 +16,13 @@ const PagosPanelPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [activeTab, setActiveTab] = useState('pendientes'); // 'pendientes' | 'historial'
 
-    // Modal
     const [showModal, setShowModal] = useState(false);
     const [selectedPedido, setSelectedPedido] = useState(null);
+    const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
 
     const itemsPerPage = 10;
+
+
 
     useEffect(() => {
         fetchPedidos();
@@ -52,6 +54,56 @@ const PagosPanelPage = () => {
         setFilteredPedidos(filtered);
         setCurrentPage(1);
     }, [searchTerm, startDate, endDate, pedidos]);
+
+    // Lógica de Ordenamiento
+    const sortedFilteredPedidos = React.useMemo(() => {
+        let sortableItems = [...filteredPedidos];
+        if (sortConfig !== null) {
+            sortableItems.sort((a, b) => {
+                let aValue = a[sortConfig.key];
+                let bValue = b[sortConfig.key];
+
+                // Manejo especial para columnas calculadas o anidadas
+                if (sortConfig.key === 'cliente') {
+                    aValue = `${a.cliente.nombres} ${a.cliente.apellidos}`.toLowerCase();
+                    bValue = `${b.cliente.nombres} ${b.cliente.apellidos}`.toLowerCase();
+                } else if (sortConfig.key === 'empresa') {
+                    aValue = (a.cliente.empresa || '').toLowerCase();
+                    bValue = (b.cliente.empresa || '').toLowerCase();
+                } else if (sortConfig.key === 'monto') {
+                    aValue = parseFloat(a.total_cotizacion || 0);
+                    bValue = parseFloat(b.total_cotizacion || 0);
+                } else if (sortConfig.key === 'items_count') {
+                    aValue = a.items ? a.items.length : 0;
+                    bValue = b.items ? b.items.length : 0;
+                }
+
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [filteredPedidos, sortConfig]);
+
+    const requestSort = (key) => {
+        let direction = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortIcon = (key) => {
+        if (sortConfig.key !== key) return <i className="bi bi-arrow-down-up text-muted ms-1" style={{ fontSize: '0.8rem' }}></i>;
+        return sortConfig.direction === 'ascending'
+            ? <i className="bi bi-sort-down ms-1 text-primary"></i>
+            : <i className="bi bi-sort-up ms-1 text-primary"></i>;
+    };
 
     const fetchPedidos = React.useCallback(async () => {
         setLoading(true);
@@ -164,8 +216,8 @@ const PagosPanelPage = () => {
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredPedidos.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(filteredPedidos.length / itemsPerPage);
+    const currentItems = sortedFilteredPedidos.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(sortedFilteredPedidos.length / itemsPerPage);
 
     const getEstadoBadge = (estado) => {
         switch (estado) {
@@ -297,12 +349,27 @@ const PagosPanelPage = () => {
                             <table className="table table-hover mb-0 align-middle">
                                 <thead className="table-light">
                                     <tr>
-                                        <th className="px-4">ID</th>
-                                        <th>Cliente</th>
-                                        <th>Empresa</th>
-                                        <th>Fecha Actualización</th>
-                                        <th>Estado</th>
-                                        <th className="text-center">Monto Total</th>
+                                        <th className="px-4" onClick={() => requestSort('id')} style={{ cursor: 'pointer' }}>
+                                            ID {getSortIcon('id')}
+                                        </th>
+                                        <th onClick={() => requestSort('cliente')} style={{ cursor: 'pointer' }}>
+                                            Cliente {getSortIcon('cliente')}
+                                        </th>
+                                        <th onClick={() => requestSort('empresa')} style={{ cursor: 'pointer' }}>
+                                            Empresa {getSortIcon('empresa')}
+                                        </th>
+                                        <th onClick={() => requestSort('fecha_actualizacion')} style={{ cursor: 'pointer' }}>
+                                            Actualización {getSortIcon('fecha_actualizacion')}
+                                        </th>
+                                        <th onClick={() => requestSort('estado')} style={{ cursor: 'pointer' }}>
+                                            Estado {getSortIcon('estado')}
+                                        </th>
+                                        <th className="text-center" onClick={() => requestSort('items_count')} style={{ cursor: 'pointer' }}>
+                                            Items {getSortIcon('items_count')}
+                                        </th>
+                                        <th className="text-center" onClick={() => requestSort('monto')} style={{ cursor: 'pointer' }}>
+                                            Monto Total {getSortIcon('monto')}
+                                        </th>
                                         <th className="text-center">Acciones</th>
                                     </tr>
                                 </thead>
@@ -323,8 +390,10 @@ const PagosPanelPage = () => {
                                             </td>
                                             <td>{getEstadoBadge(pedido.estado)}</td>
                                             <td className="text-center">
-                                                {/* Calcular total si es posible, o mostrar items */}
-                                                <span className="badge bg-secondary">{pedido.items.length} items</span>
+                                                <span className="badge bg-light text-dark border">{pedido.items ? pedido.items.length : 0} items</span>
+                                            </td>
+                                            <td className="text-center fw-bold text-success">
+                                                ${parseFloat(pedido.total_cotizacion || 0).toLocaleString('es-CL')}
                                             </td>
                                             <td className="text-center">
                                                 <div className="btn-group">
@@ -427,6 +496,50 @@ const PagosPanelPage = () => {
                                         ))}
                                     </tbody>
                                 </table>
+                            </div>
+
+                            {/* --- Desglose Financiero --- */}
+                            <div className="row justify-content-end mt-3">
+                                <div className="col-md-5">
+                                    <table className="table table-sm table-borderless text-end">
+                                        <tbody>
+                                            <tr>
+                                                <th className="fw-normal">Subtotal Neto:</th>
+                                                <td>
+                                                    $ {selectedPedido.items.reduce((acc, item) => acc + (item.precio_unitario * item.cantidad), 0).toLocaleString('es-CL')}
+                                                </td>
+                                            </tr>
+                                            {selectedPedido.porcentaje_urgencia > 0 && (
+                                                <tr>
+                                                    <th className="fw-normal">Recargo Urgencia ({selectedPedido.porcentaje_urgencia}%):</th>
+                                                    <td>
+                                                        $ {Math.round(selectedPedido.items.reduce((acc, item) => acc + (item.precio_unitario * item.cantidad), 0) * (selectedPedido.porcentaje_urgencia / 100)).toLocaleString('es-CL')}
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            <tr>
+                                                <th className="fw-normal">IVA (19%):</th>
+                                                <td>
+                                                    $ {Math.round(
+                                                        (selectedPedido.items.reduce((acc, item) => acc + (item.precio_unitario * item.cantidad), 0) * (1 + (selectedPedido.porcentaje_urgencia || 0) / 100)) * 0.19
+                                                    ).toLocaleString('es-CL')}
+                                                </td>
+                                            </tr>
+                                            {selectedPedido.costo_envio_estimado > 0 && (
+                                                <tr>
+                                                    <th className="fw-normal">Envío:</th>
+                                                    <td>$ {parseInt(selectedPedido.costo_envio_estimado).toLocaleString('es-CL')}</td>
+                                                </tr>
+                                            )}
+                                            <tr className="border-top">
+                                                <th className="fs-5">Total a Pagar:</th>
+                                                <td className="fs-5 fw-bold text-success">
+                                                    $ {parseInt(selectedPedido.total_cotizacion || 0).toLocaleString('es-CL')}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     )}

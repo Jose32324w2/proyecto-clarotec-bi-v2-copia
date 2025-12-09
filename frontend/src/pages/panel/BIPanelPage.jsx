@@ -25,15 +25,25 @@ const BIPanelPage = () => {
     // Filtros State
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [selectedCliente, setSelectedCliente] = useState('');
 
     // Filtros Multi-Select
+    const [selectedMonths, setSelectedMonths] = useState([]); // Array strings 'YYYY-MM'
+    const [selectedClientes, setSelectedClientes] = useState([]); // Array IDs
+    const [selectedClientTypes, setSelectedClientTypes] = useState([]); // Array strings 'new', 'recurring'
     const [selectedRegions, setSelectedRegions] = useState([]); // Array of strings
     const [selectedComunas, setSelectedComunas] = useState([]); // Array of strings
 
     // Data para filtros
+    const [availableOptions, setAvailableOptions] = useState({
+        clients: [],
+        regions: [],
+        comunas: [],
+        months: []
+    });
+
     const [clientes, setClientes] = useState([]);
-    const [availableComunas, setAvailableComunas] = useState([]); // Comunas filtradas por regiones seleccionadas
+    // const [availableComunas, setAvailableComunas] = useState([]); // REMOVE: Managed by API now
+    const [monthOptions, setMonthOptions] = useState([]);
 
     // Cargar Clientes
     useEffect(() => {
@@ -50,32 +60,76 @@ const BIPanelPage = () => {
         fetchClientes();
     }, [token]);
 
-    // Actualizar comunas disponibles cuando cambian las regiones
+    // Generar opciones de Meses
     useEffect(() => {
-        if (selectedRegions.length === 0) {
-            // Si no hay región seleccionada, mostrar todas las comunas de todas las regiones
-            const allComunas = REGIONES_Y_COMUNAS.flatMap(r => r.comunas).sort();
-            setAvailableComunas(allComunas);
-        } else {
-            // Filtrar comunas de las regiones seleccionadas
-            const filteredComunas = REGIONES_Y_COMUNAS
-                .filter(r => selectedRegions.includes(r.region))
-                .flatMap(r => r.comunas)
-                .sort();
-            setAvailableComunas(filteredComunas);
+        const options = [];
+        const today = new Date();
+        for (let i = 0; i < 13; i++) {
+            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const value = `${year}-${month}`;
+            const label = d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+            const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+            options.push({ value, label: formattedLabel });
         }
+        setMonthOptions(options);
+    }, []);
+
+    // Cargar Opciones Dinámicas (Facetas)
+    useEffect(() => {
+        const fetchFilterOptions = async () => {
+            try {
+                const params = new URLSearchParams();
+                if (startDate) params.append('start_date', startDate);
+                if (endDate) params.append('end_date', endDate);
+                selectedMonths.forEach(m => params.append('month[]', m));
+                selectedClientes.forEach(c => params.append('cliente_id[]', c));
+                selectedClientTypes.forEach(t => params.append('client_type[]', t));
+                selectedRegions.forEach(r => params.append('region[]', r));
+                selectedComunas.forEach(c => params.append('comuna[]', c));
+
+                const response = await axios.get(`http://localhost:8000/api/bi/filter-options/?${params.toString()}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setAvailableOptions(response.data);
+            } catch (err) {
+                console.error("Error fetching filter options:", err);
+            }
+        };
+
+        const timeoutId = setTimeout(() => {
+            fetchFilterOptions();
+        }, 300); // Debounce ligero
+
+        return () => clearTimeout(timeoutId);
+    }, [token, startDate, endDate, selectedMonths, selectedClientes, selectedClientTypes, selectedRegions, selectedComunas]);
+
+    // Deprecated: Local Comuna Logic replaced by API
+    /*
+    useEffect(() => {
+        // ... (Logic removed in favor of API)
     }, [selectedRegions]);
+    */
 
     // Cargar Datos del Gráfico y KPIs
     useEffect(() => {
         const fetchData = async () => {
+            // Validar fechas antes de enviar
+            const isValidDate = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d);
+            if (startDate && !isValidDate(startDate)) return;
+            if (endDate && !isValidDate(endDate)) return;
+
             setLoading(true);
             try {
                 // Construir Query Params manualmente para arrays
                 const params = new URLSearchParams();
                 if (startDate) params.append('start_date', startDate);
                 if (endDate) params.append('end_date', endDate);
-                if (selectedCliente) params.append('cliente_id', selectedCliente);
+
+                selectedMonths.forEach(m => params.append('month[]', m));
+                selectedClientes.forEach(c => params.append('cliente_id[]', c));
+                selectedClientTypes.forEach(t => params.append('client_type[]', t));
 
                 selectedRegions.forEach(r => params.append('region[]', r));
                 selectedComunas.forEach(c => params.append('comuna[]', c));
@@ -109,7 +163,7 @@ const BIPanelPage = () => {
         };
 
         fetchData();
-    }, [token, startDate, endDate, selectedCliente, selectedRegions, selectedComunas]);
+    }, [token, startDate, endDate, selectedMonths, selectedClientes, selectedClientTypes, selectedRegions, selectedComunas]);
 
     // Handlers para Multi-Select (Simple Toggle)
     const toggleRegion = (region) => {
@@ -121,6 +175,27 @@ const BIPanelPage = () => {
     const toggleComuna = (comuna) => {
         setSelectedComunas(prev =>
             prev.includes(comuna) ? prev.filter(c => c !== comuna) : [...prev, comuna]
+        );
+    };
+
+    const toggleMonth = (val) => {
+        setSelectedMonths(prev =>
+            prev.includes(val) ? prev.filter(m => m !== val) : [...prev, val]
+        );
+        setStartDate('');
+        setEndDate('');
+    };
+
+    const toggleCliente = (id) => {
+        const idStr = String(id);
+        setSelectedClientes(prev =>
+            prev.includes(idStr) ? prev.filter(c => c !== idStr) : [...prev, idStr]
+        );
+    };
+
+    const toggleClientType = (type) => {
+        setSelectedClientTypes(prev =>
+            prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
         );
     };
 
@@ -150,35 +225,100 @@ const BIPanelPage = () => {
                 <Card.Body>
                     <Row className="mb-3">
                         <Col md={3}>
-                            <label className="form-label">Fecha Inicio</label>
-                            <input
-                                type="date"
-                                className="form-control"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                            />
+                            <label className="form-label">Meses (Multi-Select)</label>
+                            <div className="border p-2 rounded" style={{ maxHeight: '150px', overflowY: 'auto', backgroundColor: '#fff' }}>
+                                {monthOptions.map(opt => {
+                                    const isAvailable = availableOptions.months.length === 0 || availableOptions.months.includes(opt.value);
+                                    // Si hay selección activa de meses, mostramos los seleccionados SIEMPRE para no perder contexto.
+                                    // Pero el endpoint devuelve meses disponibles considerando OTROS filtros.
+                                    // Si no hay coincidencias, mejor deshabilitar o mostrar en gris.
+                                    // El usuario pidió "evitar colocar algo que no va".
+                                    if (!isAvailable && !selectedMonths.includes(opt.value)) return null;
+
+                                    return (
+                                        <Form.Check
+                                            key={opt.value}
+                                            type="checkbox"
+                                            label={opt.label}
+                                            checked={selectedMonths.includes(opt.value)}
+                                            onChange={() => toggleMonth(opt.value)}
+                                            style={{ opacity: isAvailable ? 1 : 0.5 }}
+                                        />
+                                    );
+                                })}
+                            </div>
+                            <div className="mt-1">
+                                {selectedMonths.length > 0 && <Badge bg="primary">{selectedMonths.length} meses</Badge>}
+                            </div>
                         </Col>
+
                         <Col md={3}>
-                            <label className="form-label">Fecha Fin</label>
-                            <input
-                                type="date"
-                                className="form-control"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                            />
+                            <label className="form-label">Clientes (Multi-Select)</label>
+                            <div className="border p-2 rounded" style={{ maxHeight: '150px', overflowY: 'auto', backgroundColor: '#fff' }}>
+                                {clientes.map(c => {
+                                    const idStr = String(c.id);
+                                    // Available check: API returns ints usually, verify type match.
+                                    const isAvailable = availableOptions.clients.length === 0 || availableOptions.clients.includes(c.id);
+
+                                    if (!isAvailable && !selectedClientes.includes(idStr)) return null;
+
+                                    return (
+                                        <Form.Check
+                                            key={c.id}
+                                            type="checkbox"
+                                            label={c.nombre}
+                                            checked={selectedClientes.includes(idStr)}
+                                            onChange={() => toggleCliente(c.id)}
+                                        />
+                                    );
+                                })}
+                            </div>
+                            <div className="mt-1">
+                                {selectedClientes.length > 0 && <Badge bg="info">{selectedClientes.length} clientes</Badge>}
+                            </div>
                         </Col>
-                        <Col md={6}>
-                            <label className="form-label">Cliente</label>
-                            <select
-                                className="form-select"
-                                value={selectedCliente}
-                                onChange={(e) => setSelectedCliente(e.target.value)}
-                            >
-                                <option value="">Todos los Clientes</option>
-                                {clientes.map(c => (
-                                    <option key={c.id} value={c.id}>{c.nombre}</option>
-                                ))}
-                            </select>
+
+                        <Col md={3}>
+                            <label className="form-label">Tipo Cliente</label>
+                            <div className="border p-2 rounded" style={{ maxHeight: '150px', overflowY: 'auto', backgroundColor: '#fff' }}>
+                                <Form.Check
+                                    type="checkbox"
+                                    label="Nuevos"
+                                    checked={selectedClientTypes.includes('new')}
+                                    onChange={() => toggleClientType('new')}
+                                />
+                                <Form.Check
+                                    type="checkbox"
+                                    label="Recurrentes"
+                                    checked={selectedClientTypes.includes('recurring')}
+                                    onChange={() => toggleClientType('recurring')}
+                                />
+                            </div>
+                        </Col>
+
+                        <Col md={3}>
+                            <label className="form-label fw-bold">Rango Personalizado</label>
+                            <div className="mb-2">
+                                <small>Inicio</small>
+                                <input
+                                    type="date"
+                                    className="form-control form-control-sm"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    disabled={selectedMonths.length > 0}
+                                />
+                            </div>
+                            <div>
+                                <small>Fin</small>
+                                <input
+                                    type="date"
+                                    className="form-control form-control-sm"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    disabled={selectedMonths.length > 0}
+                                />
+                            </div>
+                            {selectedMonths.length > 0 && <small className="text-muted">* Meses seleccionados tienen prioridad</small>}
                         </Col>
                     </Row>
 
@@ -186,15 +326,20 @@ const BIPanelPage = () => {
                         <Col md={6}>
                             <label className="form-label">Regiones (Selección Múltiple)</label>
                             <div className="border p-2 rounded" style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                                {REGIONES_Y_COMUNAS.map(item => (
-                                    <Form.Check
-                                        key={item.region}
-                                        type="checkbox"
-                                        label={item.region}
-                                        checked={selectedRegions.includes(item.region)}
-                                        onChange={() => toggleRegion(item.region)}
-                                    />
-                                ))}
+                                {REGIONES_Y_COMUNAS.map(item => {
+                                    const isAvailable = availableOptions.regions.length === 0 || availableOptions.regions.includes(item.region);
+                                    if (!isAvailable && !selectedRegions.includes(item.region)) return null;
+
+                                    return (
+                                        <Form.Check
+                                            key={item.region}
+                                            type="checkbox"
+                                            label={item.region}
+                                            checked={selectedRegions.includes(item.region)}
+                                            onChange={() => toggleRegion(item.region)}
+                                        />
+                                    )
+                                })}
                             </div>
                             <div className="mt-1">
                                 {selectedRegions.map(r => <Badge key={r} bg="secondary" className="me-1">{r}</Badge>)}
@@ -203,8 +348,10 @@ const BIPanelPage = () => {
                         <Col md={6}>
                             <label className="form-label">Comunas (Dinámico)</label>
                             <div className="border p-2 rounded" style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                                {availableComunas.length > 0 ? (
-                                    availableComunas.map(comuna => (
+                                {availableOptions.comunas && availableOptions.comunas.length > 0 ? (
+                                    // Mostrar TODAS las comunas disponibles según la API (ya filtradas por región si aplica)
+                                    // Pero necesitamos iterar sobre QUE? availableOptions.comunas es la lista ideal.
+                                    availableOptions.comunas.sort().map(comuna => (
                                         <Form.Check
                                             key={comuna}
                                             type="checkbox"
@@ -214,7 +361,7 @@ const BIPanelPage = () => {
                                         />
                                     ))
                                 ) : (
-                                    <span className="text-muted">Cargando comunas...</span>
+                                    <span className="text-muted">Sin comunas disponibles...</span>
                                 )}
                             </div>
                             <div className="mt-1">
@@ -227,77 +374,115 @@ const BIPanelPage = () => {
 
             {/* --- SECCIÓN DE KPIs --- */}
             {kpiData && (
-                <Row className="mb-4">
-                    {/* KPI 1: Volumen de Ventas (NUEVO) */}
-                    <Col md={3}>
-                        <Card className="shadow-sm h-100 text-center border-primary">
-                            <Card.Body>
-                                <h6 className="text-muted">Volumen de Ventas</h6>
-                                <h3 className="text-primary">${kpiData.total_ingresos?.toLocaleString()}</h3>
-                                <p className="mb-0 text-muted">
-                                    <strong>{kpiData.total_pedidos}</strong> pedidos completados
-                                </p>
-                            </Card.Body>
-                        </Card>
-                    </Col>
+                <>
+                    {/* --- ROW 1: KPIs FINANCIEROS (DESGLOSE) --- */}
+                    <Row className="mb-4">
+                        {/* 1. Total Facturado (Bruto) */}
+                        <Col md={3}>
+                            <Card className="shadow-sm h-100 text-center border-primary">
+                                <Card.Body>
+                                    <h6 className="text-muted text-uppercase small ls-1">Total Facturado</h6>
+                                    <h3 className="text-primary fw-bold my-2">${kpiData.total_ingresos?.toLocaleString()}</h3>
+                                    <Badge bg="light" text="dark" className="border">
+                                        {kpiData.total_pedidos} pedidos
+                                    </Badge>
+                                    <div className="mt-2 text-muted" style={{ fontSize: '0.75rem' }}>
+                                        <span className="d-block">IVA (19%): ${kpiData.total_iva?.toLocaleString()}</span>
+                                        <span className="d-block">Envíos: ${kpiData.total_envios?.toLocaleString()}</span>
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
 
-                    {/* KPI 2: Margen Operacional */}
-                    <Col md={3}>
-                        <Card className="shadow-sm h-100 text-center">
-                            <Card.Body>
-                                <h6 className="text-muted">Margen Operacional</h6>
-                                <h3 className={kpiData.margen_operacional >= 20 ? 'text-success' : 'text-warning'}>
-                                    {kpiData.margen_operacional}%
-                                </h3>
-                                <p className="mb-0 text-muted">
-                                    <small>Utilidad: ${kpiData.total_utilidad?.toLocaleString()}</small>
-                                </p>
-                            </Card.Body>
-                        </Card>
-                    </Col>
+                        {/* 2. Venta Neta (Base Imponible) */}
+                        <Col md={3}>
+                            <Card className="shadow-sm h-100 text-center border-info">
+                                <Card.Body>
+                                    <h6 className="text-muted text-uppercase small ls-1">Venta Neta</h6>
+                                    <h3 className="text-info fw-bold my-2">${kpiData.total_neto?.toLocaleString()}</h3>
+                                    <small className="d-block text-muted mt-3" style={{ fontSize: '0.75rem' }}>
+                                        Ingreso Real (Sin IVA)
+                                    </small>
+                                </Card.Body>
+                            </Card>
+                        </Col>
 
-                    {/* KPI 3: Tasa de Recurrencia */}
-                    <Col md={3}>
-                        <Card className="shadow-sm h-100 text-center">
-                            <Card.Body>
-                                <h6 className="text-muted">Tasa de Recurrencia</h6>
-                                <h3 className="text-dark">{kpiData.tasa_recurrencia}%</h3>
-                                <p className="mb-0 text-muted">
-                                    <small>{kpiData.clientes_recurrentes} recurrentes</small>
-                                </p>
-                            </Card.Body>
-                        </Card>
-                    </Col>
+                        {/* 3. Costos Operacionales */}
+                        <Col md={3}>
+                            <Card className="shadow-sm h-100 text-center border-danger">
+                                <Card.Body>
+                                    <h6 className="text-muted text-uppercase small ls-1">Costos Totales</h6>
+                                    <h3 className="text-danger fw-bold my-2">${kpiData.total_costos?.toLocaleString()}</h3>
+                                    <small className="d-block text-muted mt-3" style={{ fontSize: '0.75rem' }}>
+                                        Costo de Productos
+                                    </small>
+                                </Card.Body>
+                            </Card>
+                        </Col>
 
-                    {/* Gráfico: Distribución Clientes */}
-                    <Col md={3}>
-                        <Card className="shadow-sm h-100">
-                            <Card.Body style={{ height: '150px', padding: '5px' }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={[
-                                                { name: 'Nuevos', value: kpiData.clientes_nuevos },
-                                                { name: 'Recurrentes', value: kpiData.clientes_recurrentes }
-                                            ]}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={30}
-                                            outerRadius={50}
-                                            paddingAngle={5}
-                                            dataKey="value"
-                                        >
-                                            <Cell key="cell-new" fill="#00C49F" />
-                                            <Cell key="cell-recurring" fill="#FFBB28" />
-                                        </Pie>
-                                        <Tooltip />
-                                        <Legend verticalAlign="bottom" height={20} iconSize={8} wrapperStyle={{ fontSize: '10px' }} />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
+                        {/* 4. Utilidad y Margen */}
+                        <Col md={3}>
+                            <Card className="shadow-sm h-100 text-center border-success">
+                                <Card.Body>
+                                    <h6 className="text-muted text-uppercase small ls-1">Utilidad Neta</h6>
+                                    <h3 className="text-success fw-bold my-2 py-1">${kpiData.total_utilidad?.toLocaleString()}</h3>
+                                    <Badge
+                                        bg={kpiData.margen_operacional > 30 ? 'success' : kpiData.margen_operacional > 10 ? 'warning' : 'danger'}
+                                        text={kpiData.margen_operacional > 10 && kpiData.margen_operacional <= 30 ? 'dark' : 'white'}
+                                        className="mt-1 px-3 py-2 rounded-pill shadow-sm"
+                                        style={{ fontSize: '0.9rem' }}
+                                    >
+                                        Margen: {kpiData.margen_operacional}%
+                                    </Badge>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+
+                    {/* --- ROW 2: KPIs CLIENTES --- */}
+                    <Row className="mb-4">
+                        <Col md={6}>
+                            <Card className="shadow-sm h-100">
+                                <Card.Header as="h6" className="bg-white border-bottom-0">Tasa de Recurrencia</Card.Header>
+                                <Card.Body className="d-flex align-items-center justify-content-center">
+                                    <div className="text-center">
+                                        <h2 className="display-4 fw-bold">{kpiData.tasa_recurrencia}%</h2>
+                                        <p className="text-muted">{kpiData.clientes_recurrentes} clientes recurrentes</p>
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+
+                        <Col md={6}>
+                            <Card className="shadow-sm h-100">
+                                <Card.Header as="h6" className="bg-white border-bottom-0">Distribución de Clientes</Card.Header>
+                                <Card.Body style={{ height: '200px' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={[
+                                                    { name: 'Nuevos', value: kpiData.clientes_nuevos },
+                                                    { name: 'Recurrentes', value: kpiData.clientes_recurrentes }
+                                                ]}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={50}
+                                                outerRadius={70}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                <Cell key="cell-new" fill="#00C49F" />
+                                                <Cell key="cell-recurring" fill="#FFBB28" />
+                                            </Pie>
+                                            <Tooltip />
+                                            <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+                </>
             )}
 
             {loading ? (

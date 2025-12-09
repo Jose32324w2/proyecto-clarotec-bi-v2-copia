@@ -21,13 +21,13 @@ import DashboardPage from './pages/DashboardPage';
 import SolicitudPage from './pages/SolicitudPage';
 import PortalPage from './pages/PortalPage';
 import ClientHistoryPage from './pages/ClientHistoryPage';
-import ClientProfilePage from './pages/ClientProfilePage';
+import ProfilePage from './pages/ProfilePage';
 import SolicitudesPanelPage from './pages/panel/SolicitudesPanelPage';
 import CotizacionDetailPage from './pages/panel/CotizacionDetailPage';
 import CotizacionesPanelPage from './pages/panel/CotizacionesPanelPage';
 import PagosPanelPage from './pages/panel/PagosPanelPage';
 import DespachosPanelPage from './pages/panel/DespachosPanelPage';
-import ProductosPanelPage from './pages/panel/ProductosPanelPage';
+// import ProductosPanelPage from './pages/panel/ProductosPanelPage'; // Eliminado
 import ClientesPanelPage from './pages/panel/ClientesPanelPage';
 import BIPanelPage from './pages/panel/BIPanelPage';
 import ClientRetentionPage from './pages/panel/ClientRetentionPage';
@@ -111,7 +111,7 @@ function App() {
                         <Route path="/solicitar-cotizacion" element={<SolicitudPage />} />
                         <Route path="/portal/pedidos/:id_seguimiento" element={<PortalPage />} />
                         <Route path="/portal/mis-pedidos" element={<ClientHistoryPage />} />
-                        <Route path="/portal/perfil" element={<ClientProfilePage />} />
+                        <Route path="/portal/perfil" element={<ProfilePage />} />
 
                         {/* --- RUTAS PROTEGIDAS --- */}
                         <Route element={<ProtectedRoute />}>
@@ -121,7 +121,7 @@ function App() {
                             <Route path="/panel/cotizaciones" element={<CotizacionesPanelPage />} />
                             <Route path="/panel/pagos" element={<PagosPanelPage />} />
                             <Route path="/panel/despachos" element={<DespachosPanelPage />} />
-                            <Route path="/panel/productos" element={<ProductosPanelPage />} />
+                            {/* <Route path="/panel/productos" element={<ProductosPanelPage />} /> Eliminado a pedido del usuario */}
                             <Route path="/panel/clientes" element={<ClientesPanelPage />} />
                             <Route path="/panel/bi" element={<BIPanelPage />} />
                             <Route path="/panel/bi/retention" element={<ClientRetentionPage />} />

@@ -20,6 +20,18 @@ const SolicitudesPanelPage = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedSolicitud, setSelectedSolicitud] = useState(null);
 
+    const [sortField, setSortField] = useState('fecha_solicitud');
+    const [sortOrder, setSortOrder] = useState('desc'); // asc, desc
+
+    const handleSort = (field) => {
+        if (sortField === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortOrder('asc');
+        }
+    };
+
     const itemsPerPage = 10;
 
     useEffect(() => {
@@ -76,13 +88,64 @@ const SolicitudesPanelPage = () => {
             filtered = filtered.filter(s => new Date(s.fecha_solicitud) <= end);
         }
 
+        // Ordenamiento
+        filtered.sort((a, b) => {
+            let valA, valB;
+
+            // Mapeo seguro de campos anidados
+            if (sortField === 'cliente.nombre') {
+                valA = a.cliente?.nombre || '';
+                valB = b.cliente?.nombre || '';
+            } else if (sortField === 'cliente.empresa') {
+                valA = a.cliente?.empresa || '';
+                valB = b.cliente?.empresa || '';
+            } else if (sortField === 'cliente.email') {
+                valA = a.cliente?.email || '';
+                valB = b.cliente?.email || '';
+            } else {
+                valA = a[sortField];
+                valB = b[sortField];
+            }
+
+            // Normalización para strings
+            if (typeof valA === 'string') valA = valA.toLowerCase();
+            if (typeof valB === 'string') valB = valB.toLowerCase();
+
+            if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+            if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
         setFilteredSolicitudes(filtered);
         setCurrentPage(1);
-    }, [solicitudes, searchTerm, startDate, endDate]);
+    }, [solicitudes, searchTerm, startDate, endDate, sortField, sortOrder]);
 
     useEffect(() => {
         filterSolicitudes();
     }, [filterSolicitudes]);
+
+    const handleRechazar = async (id) => {
+        if (!window.confirm('¿Estás seguro de que deseas rechazar esta solicitud? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('accessToken');
+            await axios.post(`http://127.0.0.1:8000/api/pedidos/${id}/rechazar/`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            // Eliminar de la lista local
+            setSolicitudes(prev => prev.filter(s => s.id !== id));
+            setFilteredSolicitudes(prev => prev.filter(s => s.id !== id));
+            // Opcional: Mostrar toast de éxito
+        } catch (err) {
+            console.error("Error al rechazar solicitud:", err);
+            setError('Error al rechazar la solicitud.');
+            setTimeout(() => setError(''), 3000);
+        }
+    };
 
     const handleShowModal = (solicitud) => {
         setSelectedSolicitud(solicitud);
@@ -206,11 +269,21 @@ const SolicitudesPanelPage = () => {
                             <table className="table table-hover mb-0 align-middle">
                                 <thead className="table-light">
                                     <tr>
-                                        <th className="px-4">ID</th>
-                                        <th>Cliente</th>
-                                        <th>Empresa</th>
-                                        <th>Email</th>
-                                        <th>Fecha</th>
+                                        <th className="px-4" onClick={() => handleSort('id')} style={{ cursor: 'pointer' }}>
+                                            ID {sortField === 'id' && (sortOrder === 'asc' ? <i className="bi bi-caret-up-fill small"></i> : <i className="bi bi-caret-down-fill small"></i>)}
+                                        </th>
+                                        <th onClick={() => handleSort('cliente.nombre')} style={{ cursor: 'pointer' }}>
+                                            Cliente {sortField === 'cliente.nombre' && (sortOrder === 'asc' ? <i className="bi bi-caret-up-fill small"></i> : <i className="bi bi-caret-down-fill small"></i>)}
+                                        </th>
+                                        <th onClick={() => handleSort('cliente.empresa')} style={{ cursor: 'pointer' }}>
+                                            Empresa {sortField === 'cliente.empresa' && (sortOrder === 'asc' ? <i className="bi bi-caret-up-fill small"></i> : <i className="bi bi-caret-down-fill small"></i>)}
+                                        </th>
+                                        <th onClick={() => handleSort('cliente.email')} style={{ cursor: 'pointer' }}>
+                                            Email {sortField === 'cliente.email' && (sortOrder === 'asc' ? <i className="bi bi-caret-up-fill small"></i> : <i className="bi bi-caret-down-fill small"></i>)}
+                                        </th>
+                                        <th onClick={() => handleSort('fecha_solicitud')} style={{ cursor: 'pointer' }}>
+                                            Fecha {sortField === 'fecha_solicitud' && (sortOrder === 'asc' ? <i className="bi bi-caret-up-fill small"></i> : <i className="bi bi-caret-down-fill small"></i>)}
+                                        </th>
                                         <th className="text-center">Items</th>
                                         <th className="text-center">Acciones</th>
                                     </tr>
@@ -246,6 +319,13 @@ const SolicitudesPanelPage = () => {
                                                         title="Ver detalles"
                                                     >
                                                         <i className="bi bi-eye"></i> Ver
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-sm btn-outline-danger"
+                                                        onClick={() => handleRechazar(solicitud.id)}
+                                                        title="Rechazar Solicitud"
+                                                    >
+                                                        <i className="bi bi-x-lg"></i>
                                                     </button>
                                                     <Link
                                                         to={`/panel/cotizacion/${solicitud.id}`}

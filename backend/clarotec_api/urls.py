@@ -17,7 +17,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from usuarios.views import MeView, ClientRegisterAPIView
+from usuarios.views import MeView, ClientRegisterAPIView, ChangePasswordView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,7 +26,9 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     # Endpoints de la app 'usuarios'
+    # Endpoints de la app 'usuarios'
     path('api/users/me/', MeView.as_view(), name='user_me'),
+    path('api/users/me/password/', ChangePasswordView.as_view(), name='change_password'),
     path('api/register/', ClientRegisterAPIView.as_view(), name='client_register'),
 
     # Endpoints de la app 'gestion'

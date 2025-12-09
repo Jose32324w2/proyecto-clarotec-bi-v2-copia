@@ -8,6 +8,48 @@ const ClientHistoryPage = () => {
     const [pedidos, setPedidos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' }); // Por defecto ID mas reciente
+
+    // Ordenamiento
+    const sortedPedidos = React.useMemo(() => {
+        let sortableItems = [...pedidos];
+        if (sortConfig !== null) {
+            sortableItems.sort((a, b) => {
+                let aValue = a[sortConfig.key];
+                let bValue = b[sortConfig.key];
+
+                // Manejo de valores nulos o "Pendiente" en total
+                if (sortConfig.key === 'total_cotizacion') {
+                    aValue = parseFloat(aValue || 0);
+                    bValue = parseFloat(bValue || 0);
+                }
+
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [pedidos, sortConfig]);
+
+    const requestSort = (key) => {
+        let direction = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortIcon = (key) => {
+        if (sortConfig.key !== key) return <i className="bi bi-arrow-down-up text-muted ms-1" style={{ fontSize: '0.8rem' }}></i>;
+        return sortConfig.direction === 'ascending'
+            ? <i className="bi bi-sort-down ms-1 text-primary"></i>
+            : <i className="bi bi-sort-up ms-1 text-primary"></i>;
+    };
 
     useEffect(() => {
         const fetchHistory = async () => {
@@ -69,15 +111,23 @@ const ClientHistoryPage = () => {
                             <table className="table table-hover align-middle mb-0">
                                 <thead className="bg-light">
                                     <tr>
-                                        <th className="ps-4">Pedido #</th>
-                                        <th>Fecha</th>
-                                        <th>Estado</th>
-                                        <th>Total</th>
+                                        <th className="ps-4" onClick={() => requestSort('id')} style={{ cursor: 'pointer' }}>
+                                            Pedido # {getSortIcon('id')}
+                                        </th>
+                                        <th onClick={() => requestSort('fecha_solicitud')} style={{ cursor: 'pointer' }}>
+                                            Fecha {getSortIcon('fecha_solicitud')}
+                                        </th>
+                                        <th onClick={() => requestSort('estado')} style={{ cursor: 'pointer' }}>
+                                            Estado {getSortIcon('estado')}
+                                        </th>
+                                        <th onClick={() => requestSort('total_cotizacion')} style={{ cursor: 'pointer' }}>
+                                            Total {getSortIcon('total_cotizacion')}
+                                        </th>
                                         <th className="text-end pe-4">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {pedidos.map(p => (
+                                    {sortedPedidos.map(p => (
                                         <tr key={p.id}>
                                             <td className="ps-4 fw-bold text-primary">#{p.id}</td>
                                             <td>{new Date(p.fecha_solicitud).toLocaleDateString()}</td>

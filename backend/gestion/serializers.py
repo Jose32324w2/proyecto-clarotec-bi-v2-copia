@@ -41,9 +41,16 @@ class ItemSolicitudInputSerializer(serializers.Serializer):
 
 
 class ClienteSerializer(serializers.ModelSerializer):
+    es_usuario_registrado = serializers.SerializerMethodField()
+
     class Meta:
         model = Cliente
         fields = '__all__'
+
+    def get_es_usuario_registrado(self, obj):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        return User.objects.filter(email=obj.email).exists()
 
 
 class ItemsPedidoSerializer(serializers.ModelSerializer):
@@ -159,7 +166,8 @@ class PedidoSerializer(serializers.ModelSerializer):
             'id', 'cliente', 'fecha_solicitud', 'fecha_actualizacion', 'fecha_despacho',
             'estado', 'porcentaje_urgencia', 'costo_envio_estimado',
             'transportista', 'numero_guia', 'region', 'comuna', 'metodo_envio',
-            'nombre_transporte_custom', 'opciones_envio', 'items', 'id_seguimiento'
+            'nombre_transporte_custom', 'opciones_envio', 'items', 'id_seguimiento',
+            'total_cotizacion'
         ]
 
 

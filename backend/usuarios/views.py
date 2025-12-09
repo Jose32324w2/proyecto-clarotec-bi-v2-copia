@@ -120,3 +120,38 @@ class ClientRegisterAPIView(APIView):
             return Response({'status': 'Usuario creado exitosamente. Puede iniciar sesión.'}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': f"Error creando usuario: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ChangePasswordView(APIView):
+    """
+    Endpoint para que un usuario autenticado cambie su contraseña.
+    Requiere 'current_password' y 'new_password'.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request):
+        user = request.user
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+
+        if not current_password or not new_password:
+            return Response({'error': 'Faltan campos obligatorios.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verificar contraseña actual
+        if not user.check_password(current_password):
+            return Response({'error': 'La contraseña actual es incorrecta.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Cambiar contraseña
+        try:
+            # Aquí se aplicarán los validadores configurados en settings.py automáticamente
+            # si usásemos un serializer, pero al hacerlo manual deberíamos validar también.
+            # Por ahora confiamos en la validación simple, luego agregaremos validadores explícitos.
+            from django.contrib.auth.password_validation import validate_password
+            validate_password(new_password, user)
+
+            user.set_password(new_password)
+            user.save()
+            return Response({'status': 'Contraseña actualizada correctamente.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+             # validate_password lanza ValidationError con una lista de mensajes
+            return Response({'error': list(e.messages) if hasattr(e, 'messages') else str(e)}, status=status.HTTP_400_BAD_REQUEST)

@@ -16,8 +16,8 @@ VISTAS PRINCIPALES:
 from rest_framework import generics, permissions, status, viewsets
 from decimal import Decimal
 from datetime import datetime
-from django.db.models import Count, Sum, F, Q
-from django.db.models.functions import TruncMonth
+from django.db.models import Count, Sum, F, Q, Value, CharField
+from django.db.models.functions import TruncMonth, Concat, ExtractYear, ExtractMonth, LPad, Cast
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Pedido, ProductoFrecuente, Cliente, ItemsPedido
@@ -33,7 +33,8 @@ from .permissions import (
     IsVendedorOrGerencia,
     IsAdministrativaOrGerencia,
     IsDespachadorOrGerencia,
-    IsGerencia
+    IsGerencia,
+    IsStaffMember
 )
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -297,7 +298,7 @@ class ClienteViewSet(viewsets.ModelViewSet):
 
     serializer_class = ClienteSerializer
 
-    permission_classes = [IsVendedorOrGerencia]
+    permission_classes = [IsStaffMember]
 
 
 class CalcularEnvioAPIView(APIView):
@@ -793,61 +794,86 @@ class RentabilidadHistoricaAPIView(APIView):
         pedidos = Pedido.objects.filter(estado='completado').order_by('fecha_despacho')
 
         # --- FILTROS ---
-
         start_date = request.query_params.get('start_date')
-
         end_date = request.query_params.get('end_date')
 
-        cliente_id = request.query_params.get('cliente_id')
+        # Filtro Meses Multiple: ?month[]=2025-01&month[]=2025-02
+        # Si vienen meses, ignoramos start_date/end_date (o los complementamos, pero por UI es uno u otro)
+        months = request.query_params.getlist('month[]')
+        
+        if months:
+            q_months = Q()
+            for m in months:
+                # m formt: "YYYY-MM"
+                try:
+                    y, m_num = m.split('-')
+                    q_months |= Q(fecha_despacho__year=y, fecha_despacho__month=m_num)
+                except ValueError:
+                    pass
+            if q_months:
+                pedidos = pedidos.filter(q_months)
+        else:
+            # Fallback a Rango de Fechas normal
+            if start_date:
+                pedidos = pedidos.filter(fecha_despacho__date__gte=start_date)
+            if end_date:
+                pedidos = pedidos.filter(fecha_despacho__date__lte=end_date)
+
+        # Filtro Clientes Multiple: ?cliente_id[]=1&cliente_id[]=2
+        cliente_ids = request.query_params.getlist('cliente_id[]')
+        if cliente_ids:
+            pedidos = pedidos.filter(cliente_id__in=cliente_ids)
+        elif request.query_params.get('cliente_id'):
+            # Fallback single
+            pedidos = pedidos.filter(cliente_id=request.query_params.get('cliente_id'))
 
         # Filtros Multi-Select (Region y Comuna)
-
-        # Soportamos ?region=RM,NORTE o ?region[]=RM&region[]=NORTE
-
         regions = request.query_params.getlist('region[]')
-
         if not regions and request.query_params.get('region'):
-
             regions = request.query_params.get('region').split(',')
 
         comunas = request.query_params.getlist('comuna[]')
-
         if not comunas and request.query_params.get('comuna'):
-
             comunas = request.query_params.get('comuna').split(',')
 
-        if start_date:
-
-            pedidos = pedidos.filter(fecha_despacho__date__gte=start_date)
-
-        if end_date:
-
-            pedidos = pedidos.filter(fecha_despacho__date__lte=end_date)
-
-        if cliente_id:
-
-            pedidos = pedidos.filter(cliente_id=cliente_id)
-
         if regions:
-
             pedidos = pedidos.filter(region__in=regions)
-
         if comunas:
-
-            # Normalizamos comunas a minúsculas para búsqueda insensible si es necesario,
-
-            # pero asumimos que vienen limpias del frontend o coinciden con lo guardado.
-
-            # En BD se guardan como texto libre a veces, pero idealmente coinciden con el mapa.
-
             pedidos = pedidos.filter(comuna__in=comunas)
+
+        # Filtro Tipo de Cliente Multiple
+        client_types = request.query_params.getlist('client_type[]')
+        # Compatibility with single param if frontend sends client_type=new
+        if not client_types and request.query_params.get('client_type'):
+            client_types = [request.query_params.get('client_type')]
+
+        if client_types:
+            # Logic: 
+            # If 'new' only -> filter new.
+            # If 'recurring' only -> filter recurring.
+            # If both -> do nothing (Show all).
+            
+            filter_new = 'new' in client_types
+            filter_recurring = 'recurring' in client_types
+            
+            if filter_new and not filter_recurring:
+                # Solo nuevos
+                recurring_client_ids = Pedido.objects.filter(estado='completado').values('cliente').annotate(
+                    count=Count('id')
+                ).filter(count__gt=1).values_list('cliente_id', flat=True)
+                pedidos = pedidos.exclude(cliente_id__in=recurring_client_ids)
+                
+            elif filter_recurring and not filter_new:
+                # Solo recurrentes
+                recurring_client_ids = Pedido.objects.filter(estado='completado').values('cliente').annotate(
+                    count=Count('id')
+                ).filter(count__gt=1).values_list('cliente_id', flat=True)
+                pedidos = pedidos.filter(cliente_id__in=recurring_client_ids)
 
         data = []
 
         for p in pedidos:
-
             # Calcular costos e ingresos
-
             items = p.items.all()
 
             total_venta = sum(item.subtotal for item in items)
@@ -904,43 +930,71 @@ class MetricasKPIView(APIView):
 
         pedidos = Pedido.objects.filter(estado='completado')
 
+        # --- FILTROS ---
         start_date = request.query_params.get('start_date')
-
         end_date = request.query_params.get('end_date')
 
-        cliente_id = request.query_params.get('cliente_id')
+        # Filtro Meses Multiple: ?month[]=2025-01
+        months = request.query_params.getlist('month[]')
+        
+        if months:
+            q_months = Q()
+            for m in months:
+                try:
+                    y, m_num = m.split('-')
+                    # Usamos fecha_actualizacion para KPI View consistencia
+                    q_months |= Q(fecha_actualizacion__year=y, fecha_actualizacion__month=m_num)
+                except ValueError:
+                    pass
+            if q_months:
+                pedidos = pedidos.filter(q_months)
+        else:
+            if start_date:
+                pedidos = pedidos.filter(fecha_actualizacion__date__gte=start_date)
+            if end_date:
+                pedidos = pedidos.filter(fecha_actualizacion__date__lte=end_date)
+        
+        # Filtro Clientes Multiple
+        cliente_ids = request.query_params.getlist('cliente_id[]')
+        if cliente_ids:
+            pedidos = pedidos.filter(cliente_id__in=cliente_ids)
+        elif request.query_params.get('cliente_id'):
+            pedidos = pedidos.filter(cliente_id=request.query_params.get('cliente_id'))
 
-        # Filtros Multi-Select
-
+        # Filtros Multi-Select (Region y Comuna)
         regions = request.query_params.getlist('region[]')
-
         if not regions and request.query_params.get('region'):
-
             regions = request.query_params.get('region').split(',')
 
         comunas = request.query_params.getlist('comuna[]')
-
         if not comunas and request.query_params.get('comuna'):
-
             comunas = request.query_params.get('comuna').split(',')
 
-        if start_date:
-
-            pedidos = pedidos.filter(fecha_actualizacion__date__gte=start_date)
-
-        if end_date:
-
-            pedidos = pedidos.filter(fecha_actualizacion__date__lte=end_date)
-
-        if cliente_id:
-
-            pedidos = pedidos.filter(cliente_id=cliente_id)
-
         if regions:
-
             pedidos = pedidos.filter(region__in=regions)
         if comunas:
             pedidos = pedidos.filter(comuna__in=comunas)
+
+        # Filtro Tipo de Cliente Multiple
+        client_types = request.query_params.getlist('client_type[]')
+        if not client_types and request.query_params.get('client_type'):
+            client_types = [request.query_params.get('client_type')]
+
+        if client_types:
+            filter_new = 'new' in client_types
+            filter_recurring = 'recurring' in client_types
+            
+            if filter_new and not filter_recurring:
+                recurring_client_ids = Pedido.objects.filter(estado='completado').values('cliente').annotate(
+                    count=Count('id')
+                ).filter(count__gt=1).values_list('cliente_id', flat=True)
+                pedidos = pedidos.exclude(cliente_id__in=recurring_client_ids)
+                
+            elif filter_recurring and not filter_new:
+                recurring_client_ids = Pedido.objects.filter(estado='completado').values('cliente').annotate(
+                    count=Count('id')
+                ).filter(count__gt=1).values_list('cliente_id', flat=True)
+                pedidos = pedidos.filter(cliente_id__in=recurring_client_ids)
 
         # --- KPI 1: Tasa de Recurrencia ---
         # Lógica: De los clientes que aparecen en los pedidos filtrados, ¿cuántos
@@ -976,8 +1030,12 @@ class MetricasKPIView(APIView):
         # Reutilizamos lógica de cálculo iterativo por simplicidad y consistencia con RentabilidadHistoricaView
         # (Aunque podría optimizarse con agregaciones complejas, el cálculo de urgencia lo hace difícil en DB pura sin funciones complejas)
 
-        total_ingresos_global = Decimal('0.00')
+        total_ingresos_netos = Decimal('0.00') # Subtotal + Recargo (Sin IVA/Envio)
+        total_facturado_real = Decimal('0.00') # Con IVA y Envio
         total_costos_global = Decimal('0.00')
+        total_utilidad_neta = Decimal('0.00')
+        total_iva = Decimal('0.00')
+        total_envios = Decimal('0.00')
 
         # Iteramos sobre el queryset filtrado 'pedidos' (que ya tiene prefetch de items idealmente, pero aquí no lo forzamos por ahora)
         # Para optimizar, hacemos prefetch
@@ -992,26 +1050,43 @@ class MetricasKPIView(APIView):
                 subtotal_pedido += item.subtotal
                 costo_pedido += (item.precio_compra * item.cantidad)
 
-            # Aplicar urgencia al ingreso
+            # Ingreso Neto (Base para margen)
             recargo = subtotal_pedido * (p.porcentaje_urgencia / Decimal('100'))
             ingreso_neto_pedido = subtotal_pedido + recargo
+            
+            # IVA
+            iva_pedido = ingreso_neto_pedido * Decimal('0.19')
+            envio_pedido = p.costo_envio_estimado
 
-            total_ingresos_global += ingreso_neto_pedido
+            # Acumuladores
+            total_ingresos_netos += ingreso_neto_pedido
+            total_facturado_real += p.total_cotizacion # Usamos propiedad del modelo (Gross Model)
             total_costos_global += costo_pedido
+            
+            # Desgloses
+            total_iva += iva_pedido
+            total_envios += envio_pedido
+            
+            # Utilidad Neta Real (Neto - Costo)
+            total_utilidad_neta += (ingreso_neto_pedido - costo_pedido)
 
         margen_operacional_global = 0
-        if total_ingresos_global > 0:
-            utilidad_global = total_ingresos_global - total_costos_global
-            margen_operacional_global = (utilidad_global / total_ingresos_global) * 100
+        if total_ingresos_netos > 0:
+            # Margen = Utilidad / Ingresos Netos (Sin IVA)
+            margen_operacional_global = (total_utilidad_neta / total_ingresos_netos) * 100
 
         return Response({
             'tasa_recurrencia': round(tasa_recurrencia, 1),
             'clientes_nuevos': clientes_nuevos_count,
             'clientes_recurrentes': clientes_recurrentes_count,
             'margen_operacional': round(float(margen_operacional_global), 1),
-            'total_ingresos': float(total_ingresos_global),
-            'total_utilidad': float(total_ingresos_global - total_costos_global),
-            'total_pedidos': pedidos.count()  # Nuevo KPI: Volumen de Ventas (Cantidad)
+            'total_ingresos': int(round(total_facturado_real)), # Bruto Real (Entero)
+            'total_neto': int(round(total_ingresos_netos)), # Neto (Entero)
+            'total_costos': int(round(total_costos_global)),
+            'total_utilidad': int(round(total_utilidad_neta)),
+            'total_iva': int(round(total_iva)),
+            'total_envios': int(round(total_envios)),
+            'total_pedidos': pedidos.count()
         }, status=status.HTTP_200_OK)
 
 
@@ -1061,10 +1136,38 @@ class BIDashboardDataView(APIView):
         # Filtros Base (Igual que los otros endpoints de BI)
         pedidos = Pedido.objects.filter(estado='completado')
 
+        # --- FILTROS ---
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
-        cliente_id = request.query_params.get('cliente_id')
 
+        # Filtro Meses Multiple: ?month[]=2025-01
+        months = request.query_params.getlist('month[]')
+        
+        if months:
+            q_months = Q()
+            for m in months:
+                try:
+                    y, m_num = m.split('-')
+                    # Usamos fecha_despacho para BIDashboardDataView
+                    q_months |= Q(fecha_despacho__year=y, fecha_despacho__month=m_num)
+                except ValueError:
+                    pass
+            if q_months:
+                pedidos = pedidos.filter(q_months)
+        else:
+            if start_date:
+                pedidos = pedidos.filter(fecha_despacho__date__gte=start_date)
+            if end_date:
+                pedidos = pedidos.filter(fecha_despacho__date__lte=end_date)
+
+        # Filtro Clientes Multiple
+        cliente_ids = request.query_params.getlist('cliente_id[]')
+        if cliente_ids:
+            pedidos = pedidos.filter(cliente_id__in=cliente_ids)
+        elif request.query_params.get('cliente_id'):
+            pedidos = pedidos.filter(cliente_id=request.query_params.get('cliente_id'))
+            
+        # Filtros Multi-Select (Region y Comuna)
         regions = request.query_params.getlist('region[]')
         if not regions and request.query_params.get('region'):
             regions = request.query_params.get('region').split(',')
@@ -1073,16 +1176,31 @@ class BIDashboardDataView(APIView):
         if not comunas and request.query_params.get('comuna'):
             comunas = request.query_params.get('comuna').split(',')
 
-        if start_date:
-            pedidos = pedidos.filter(fecha_despacho__date__gte=start_date)
-        if end_date:
-            pedidos = pedidos.filter(fecha_despacho__date__lte=end_date)
-        if cliente_id:
-            pedidos = pedidos.filter(cliente_id=cliente_id)
         if regions:
             pedidos = pedidos.filter(region__in=regions)
         if comunas:
             pedidos = pedidos.filter(comuna__in=comunas)
+
+        # Filtro Tipo de Cliente Multiple
+        client_types = request.query_params.getlist('client_type[]')
+        if not client_types and request.query_params.get('client_type'):
+            client_types = [request.query_params.get('client_type')]
+
+        if client_types:
+            filter_new = 'new' in client_types
+            filter_recurring = 'recurring' in client_types
+            
+            if filter_new and not filter_recurring:
+                recurring_client_ids = Pedido.objects.filter(estado='completado').values('cliente').annotate(
+                    count=Count('id')
+                ).filter(count__gt=1).values_list('cliente_id', flat=True)
+                pedidos = pedidos.exclude(cliente_id__in=recurring_client_ids)
+                
+            elif filter_recurring and not filter_new:
+                recurring_client_ids = Pedido.objects.filter(estado='completado').values('cliente').annotate(
+                    count=Count('id')
+                ).filter(count__gt=1).values_list('cliente_id', flat=True)
+                pedidos = pedidos.filter(cliente_id__in=recurring_client_ids)
 
         # 1. Top 10 Productos (Por Ingresos)
         # Necesitamos unir con ItemsPedido
@@ -1116,23 +1234,54 @@ class BIDashboardDataView(APIView):
             for item in sales_by_region_qs
         ]
 
-        # 3. Tendencia Mensual de Ingresos
-        monthly_trend_qs = ItemsPedido.objects.filter(pedido__in=pedidos).annotate(
-            month=TruncMonth('pedido__fecha_despacho')
-        ).values('month').annotate(
-            total_ventas=Sum('subtotal'),
-            total_costos=Sum(F('precio_compra') * F('cantidad'))
-        ).order_by('month')
+        # 3. Tendencia Mensual de Ingresos (Cálculo corregido en Python para usar total_cotizacion)
+        monthly_data = {}
 
-        monthly_trend = [
-            {
-                'name': item['month'].strftime('%Y-%m') if item['month'] else 'N/A',
-                'ventas': float(item['total_ventas']),
-                'costos': float(item['total_costos']),
-                'utilidad': float(item['total_ventas'] - item['total_costos'])
-            }
-            for item in monthly_trend_qs
-        ]
+        # Iteramos sobre los pedidos únicos para sumar sus totales reales (incluyendo IVA, etc)
+        # pedidos ya está filtrado por fechas/cliente/region etc
+        # Hacemos prefetch de items para optimizar el cálculo de costos dentro del bucle si es necesario
+        pedidos_trend = pedidos.prefetch_related('items')
+
+        for p in pedidos_trend:
+            fecha = p.fecha_despacho if p.fecha_despacho else p.fecha_actualizacion
+            month_key = fecha.strftime('%Y-%m')
+
+            if month_key not in monthly_data:
+                monthly_data[month_key] = {
+                    'ventas': Decimal('0.00'),
+                    'costos': Decimal('0.00'),
+                    'utilidad': Decimal('0.00')
+                }
+            
+            # Ventas: Usamos el TOTAL REAL (Subtotal + Recargo + IVA + Envío)
+            monthly_data[month_key]['ventas'] += p.total_cotizacion
+
+            # Costos: Suma de costo de compra de items
+            costo_pedido = sum(item.precio_compra * item.cantidad for item in p.items.all())
+            monthly_data[month_key]['costos'] += costo_pedido
+
+            # Utilidad Neta: (Subtotal + Recargo) - Costos
+            # No usamos total_cotizacion aquí porque incluye IVA y Envío
+            subtotal_items = sum(item.subtotal for item in p.items.all())
+            recargo = subtotal_items * (p.porcentaje_urgencia / Decimal('100'))
+            ingreso_neto_real = subtotal_items + recargo
+            
+            monthly_data[month_key]['utilidad'] += (ingreso_neto_real - costo_pedido)
+
+        # Convertir diccionario a lista ordenada
+        monthly_trend = []
+        for month_key in sorted(monthly_data.keys()):
+            ventas = monthly_data[month_key]['ventas']
+            costos = monthly_data[month_key]['costos']
+            # La utilidad ya fue sumada correctamente en el bucle
+            utilidad = monthly_data[month_key]['utilidad']
+
+            monthly_trend.append({
+                'name': month_key,
+                'ventas': float(ventas),
+                'costos': float(costos),
+                'utilidad': float(utilidad)
+            })
 
         return Response({
             'top_products': top_products,
@@ -1424,10 +1573,8 @@ class ClientHistoryAPIView(APIView):
         # Reutilizamos PedidoSerializer o construimos una respuesta custom
         data = []
         for p in pedidos:
-            # Calcular total dinámicamente
-            total_items = sum(item.subtotal for item in p.items.all())
-            # Agregar costo de envío si aplica (simplificado)
-            total = total_items + p.costo_envio_estimado
+            # Usar la propiedad del modelo que incluye IVA y recargos
+            total = p.total_cotizacion
 
             data.append({
                 'id': p.id,
@@ -1439,3 +1586,152 @@ class ClientHistoryAPIView(APIView):
             })
 
         return Response(data, status=status.HTTP_200_OK)
+
+
+class BIFilterOptionsView(APIView):
+    """
+    Endpoint para obtener opciones de filtros dinámicos (Facetas).
+    Aplica lógica de 'Exclusión' para permitir selección múltiple dentro de una misma categoría.
+    Ej: Al filtrar por Mes X, las opciones de Meses siguen mostrando todos los meses disponibles
+    (filtrados por Cliente/Región), no solo X.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _get_filtered_queryset(self, request, exclude_params=[]):
+        """
+        Helper para construir un QuerySet aplicando todos los filtros
+        EXCEPTO los especificados en 'exclude_params'.
+        """
+        pedidos = Pedido.objects.filter(estado='completado')
+
+        # 1. Filtros FECHAS (Globales, impactan a todos menos quizás a Meses si se excluye)
+        # Nota: 'month[]' y 'start_date' actúan como filtro temporal.
+        # Si excluimos 'months', NO aplicamos ni month[] ni start_date/end_date para que aparezcan todos los tiempos disponibles.
+        
+        apply_time_filter = 'months' not in exclude_params
+        
+        if apply_time_filter:
+            months = request.query_params.getlist('month[]')
+            start_date = request.query_params.get('start_date')
+            end_date = request.query_params.get('end_date')
+
+            if months:
+                q_months = Q()
+                for m_str in months:
+                    try:
+                        year, month = m_str.split('-')
+                        q_months |= Q(fecha_actualizacion__year=year, fecha_actualizacion__month=month)
+                    except ValueError:
+                        pass
+                if q_months:
+                    pedidos = pedidos.filter(q_months)
+            else:
+                if start_date:
+                    pedidos = pedidos.filter(fecha_actualizacion__date__gte=start_date)
+                if end_date:
+                    pedidos = pedidos.filter(fecha_actualizacion__date__lte=end_date)
+        
+        # 2. Clientes
+        if 'clients' not in exclude_params:
+            cliente_ids = request.query_params.getlist('cliente_id[]')
+            if cliente_ids:
+                pedidos = pedidos.filter(cliente_id__in=cliente_ids)
+            elif request.query_params.get('cliente_id'):
+                pedidos = pedidos.filter(cliente_id=request.query_params.get('cliente_id'))
+
+        # 3. Tipos de Cliente
+        if 'client_types' not in exclude_params:
+            client_types = request.query_params.getlist('client_type[]')
+            if client_types:
+                filter_new = 'new' in client_types
+                filter_recurring = 'recurring' in client_types
+                
+                # Sub-query común para identificar recurrentes
+                recurring_qs = Pedido.objects.filter(estado='completado').values('cliente').annotate(
+                    cnt=Count('id')).filter(cnt__gt=1).values('cliente')
+
+                if filter_new and not filter_recurring:
+                    pedidos = pedidos.exclude(cliente_id__in=recurring_qs)
+                elif filter_recurring and not filter_new:
+                    pedidos = pedidos.filter(cliente_id__in=recurring_qs)
+
+        # 4. Región
+        apply_region = 'regions' not in exclude_params
+        if apply_region:
+            regions = request.query_params.getlist('region[]')
+            if not regions and request.query_params.get('region'):
+                regions = request.query_params.get('region').split(',')
+            if regions:
+                pedidos = pedidos.filter(region__in=regions)
+
+        # 5. Comuna 
+        # (Generalmente depende de región, pero en facetas cruzadas, si filtro comuna, limito clientes)
+        if 'comunas' not in exclude_params:
+            comunas = request.query_params.getlist('comuna[]')
+            if not comunas and request.query_params.get('comuna'):
+                comunas = request.query_params.get('comuna').split(',')
+            if comunas:
+                pedidos = pedidos.filter(comuna__in=comunas)
+
+        return pedidos
+
+    def get(self, request):
+        # Generar QuerySets independientes para cada faceta
+        
+        # 1. Clientes Disponibles (Filtrado por todo EXCEPTO Clientes)
+        # CORRECCIÓN: 'client_types' SÍ debe filtrar a los clientes. 
+        # Si selecciono "Nuevos", solo quiero ver clientes nuevos en la lista.
+        qs_clients = self._get_filtered_queryset(request, exclude_params=['clients'])
+        available_client_ids = qs_clients.values_list('cliente_id', flat=True).distinct()
+
+        # 2. Regiones Disponibles (Filtrado por todo EXCEPTO Region/Comuna)
+        # Nota: Si selecciono una Comuna, ¿debo ver otras Regiones? Sí, para poder cambiar.
+        qs_regions = self._get_filtered_queryset(request, exclude_params=['regions', 'comunas'])
+        available_regions = qs_regions.exclude(region__isnull=True).exclude(region='').values_list('region', flat=True).distinct()
+
+        # 3. Comunas Disponibles 
+        # AQUI hay un matiz: Las comunas SI deben limitarse por la REGIÓN seleccionada (Jerárquico),
+        # pero NO por la Comuna seleccionada (para permitir cambiar de comuna dentro de la región).
+        # Así que excluimos 'comunas' pero MANTENEMOS 'regions' (por defecto no está en exclude).
+        qs_comunas = self._get_filtered_queryset(request, exclude_params=['comunas'])
+        available_comunas = qs_comunas.exclude(comuna__isnull=True).exclude(comuna='').values_list('comuna', flat=True).distinct()
+
+        # 4. Meses Disponibles (Filtrado por todo EXCEPTO Fecha)
+        qs_months = self._get_filtered_queryset(request, exclude_params=['months'])
+        available_months = qs_months.annotate(
+            month_str=Concat(
+                ExtractYear('fecha_actualizacion'), 
+                Value('-'), 
+                LPad(Cast(ExtractMonth('fecha_actualizacion'), CharField()), 2, Value('0')),
+                output_field=CharField()
+            )
+        ).values_list('month_str', flat=True).distinct().order_by('-month_str')
+
+        return Response({
+            'clients': list(available_client_ids),
+            'regions': list(available_regions),
+            'comunas': list(available_comunas),
+            'months': list(available_months)
+        }, status=status.HTTP_200_OK)
+
+
+class RechazarPedidoView(APIView):
+    """
+    Endpoint para rechazar/cancelar manualmente una solicitud o cotización.
+    Cambia el estado a 'rechazado'.
+    """
+    permission_classes = [IsVendedorOrGerencia]
+
+    def post(self, request, pk):
+        try:
+            pedido = Pedido.objects.get(pk=pk)
+            # Validar estados permitidos para rechazar
+            if pedido.estado not in ['solicitud', 'cotizado', 'aceptado']: # Aceptado tb por si acaso
+                return Response({'error': f'No se puede rechazar un pedido en estado {pedido.estado}.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            pedido.estado = 'rechazado'
+            pedido.save()
+            return Response({'status': 'Pedido rechazado correctamente'}, status=status.HTTP_200_OK)
+        except Pedido.DoesNotExist:
+            return Response({'error': 'Pedido no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+

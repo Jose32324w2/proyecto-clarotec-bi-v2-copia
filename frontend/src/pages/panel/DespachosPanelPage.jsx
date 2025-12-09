@@ -124,6 +124,7 @@ const DespachosPanelPage = () => {
     const [viewPedido, setViewPedido] = useState(null); // For view details modal
     const [currentPage, setCurrentPage] = useState(1);
     const [activeTab, setActiveTab] = useState('por_despachar'); // 'por_despachar' | 'historial'
+    const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
 
     const itemsPerPage = 10;
 
@@ -179,6 +180,52 @@ const DespachosPanelPage = () => {
         setCurrentPage(1);
     }, [searchTerm, startDate, endDate, pedidos]);
 
+    // Lógica de Ordenamiento
+    const sortedFilteredPedidos = React.useMemo(() => {
+        let sortableItems = [...filteredPedidos];
+        if (sortConfig !== null) {
+            sortableItems.sort((a, b) => {
+                let aValue = a[sortConfig.key];
+                let bValue = b[sortConfig.key];
+
+                if (sortConfig.key === 'cliente') {
+                    aValue = `${a.cliente.nombre}`.toLowerCase(); // Nombre cliente es string 'nombre' en este endpoint
+                    bValue = `${b.cliente.nombre}`.toLowerCase();
+                } else if (sortConfig.key === 'empresa') {
+                    aValue = (a.cliente.empresa || '').toLowerCase();
+                    bValue = (b.cliente.empresa || '').toLowerCase();
+                } else if (sortConfig.key === 'items_count') {
+                    aValue = a.items ? a.items.length : 0;
+                    bValue = b.items ? b.items.length : 0;
+                }
+
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [filteredPedidos, sortConfig]);
+
+    const requestSort = (key) => {
+        let direction = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortIcon = (key) => {
+        if (sortConfig.key !== key) return <i className="bi bi-arrow-down-up text-muted ms-1" style={{ fontSize: '0.8rem' }}></i>;
+        return sortConfig.direction === 'ascending'
+            ? <i className="bi bi-sort-down ms-1 text-primary"></i>
+            : <i className="bi bi-sort-up ms-1 text-primary"></i>;
+    };
+
     const handleMarcarDespachado = async (pedidoId, { transportista, numeroGuia }) => {
         try {
             const token = localStorage.getItem('accessToken');
@@ -224,8 +271,8 @@ const DespachosPanelPage = () => {
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredPedidos.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(filteredPedidos.length / itemsPerPage);
+    const currentItems = sortedFilteredPedidos.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(sortedFilteredPedidos.length / itemsPerPage);
 
     return (
         <div className="container mt-4">
@@ -405,12 +452,24 @@ const DespachosPanelPage = () => {
                             <table className="table table-hover mb-0 align-middle">
                                 <thead className="table-light">
                                     <tr>
-                                        <th className="px-4">ID</th>
-                                        <th>Cliente</th>
-                                        <th>Empresa</th>
-                                        <th>Fecha Actualización</th>
-                                        <th>Estado</th>
-                                        <th className="text-center">Items</th>
+                                        <th className="px-4" onClick={() => requestSort('id')} style={{ cursor: 'pointer' }}>
+                                            ID {getSortIcon('id')}
+                                        </th>
+                                        <th onClick={() => requestSort('cliente')} style={{ cursor: 'pointer' }}>
+                                            Cliente {getSortIcon('cliente')}
+                                        </th>
+                                        <th onClick={() => requestSort('empresa')} style={{ cursor: 'pointer' }}>
+                                            Empresa {getSortIcon('empresa')}
+                                        </th>
+                                        <th onClick={() => requestSort('fecha_actualizacion')} style={{ cursor: 'pointer' }}>
+                                            Actualización {getSortIcon('fecha_actualizacion')}
+                                        </th>
+                                        <th onClick={() => requestSort('estado')} style={{ cursor: 'pointer' }}>
+                                            Estado {getSortIcon('estado')}
+                                        </th>
+                                        <th className="text-center" onClick={() => requestSort('items_count')} style={{ cursor: 'pointer' }}>
+                                            Items {getSortIcon('items_count')}
+                                        </th>
                                         <th className="text-center">Acciones</th>
                                     </tr>
                                 </thead>

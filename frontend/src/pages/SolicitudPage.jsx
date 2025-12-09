@@ -35,6 +35,37 @@ const SolicitudPage = () => {
     const [submitStatus, setSubmitStatus] = useState({ loading: false, success: false, error: '' });
     const [comunasDisponibles, setComunasDisponibles] = useState([]);
 
+    // Estado para búsqueda y paginación del catálogo
+    const [catalogSearch, setCatalogSearch] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6;
+
+    // Lógica de filtrado y paginación
+    const filteredProducts = React.useMemo(() => {
+        let filtered = frequentProducts;
+
+        // 1. Filtrar por búsqueda
+        if (catalogSearch) {
+            const term = catalogSearch.toLowerCase();
+            filtered = filtered.filter(p => p.nombre.toLowerCase().includes(term));
+        }
+
+        // 2. Deduplicación simple por nombre (visual) para evitar mostrar productos idénticos
+        const uniqueNames = new Set();
+        return filtered.filter(p => {
+            const nameLower = p.nombre.toLowerCase().trim();
+            if (uniqueNames.has(nameLower)) return false;
+            uniqueNames.add(nameLower);
+            return true;
+        });
+    }, [frequentProducts, catalogSearch]);
+
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    const currentProducts = filteredProducts.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
     useEffect(() => {
         // Fetch frequent products
         const fetchProducts = async () => {
@@ -159,13 +190,54 @@ const SolicitudPage = () => {
                             {loadingProducts ? (
                                 <div className="text-center py-4"><div className="spinner-border text-primary"></div></div>
                             ) : (
-                                <div className="row g-3">
-                                    {frequentProducts.map(product => (
-                                        <div key={product.id} className="col-md-6">
-                                            <CatalogCard product={product} />
+                                <>
+                                    {/* Buscador de Productos */}
+                                    <div className="input-group mb-3">
+                                        <span className="input-group-text bg-white"><i className="bi bi-search"></i></span>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Buscar en el catálogo..."
+                                            value={catalogSearch}
+                                            onChange={(e) => { setCatalogSearch(e.target.value); setCurrentPage(1); }}
+                                        />
+                                    </div>
+
+                                    {/* Listado de Productos */}
+                                    <div className="row g-3">
+                                        {currentProducts.map(product => (
+                                            <div key={product.id} className="col-md-6">
+                                                <CatalogCard product={product} />
+                                            </div>
+                                        ))}
+                                        {currentProducts.length === 0 && (
+                                            <div className="text-center py-3 text-muted">
+                                                No se encontraron productos con "{catalogSearch}".
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Paginación Simplificada */}
+                                    {totalPages > 1 && (
+                                        <div className="d-flex justify-content-between align-items-center mt-3">
+                                            <button
+                                                className="btn btn-sm btn-outline-secondary"
+                                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                disabled={currentPage === 1}
+                                            >
+                                                Anterior
+                                            </button>
+                                            <span className="small text-muted">Página {currentPage} de {totalPages}</span>
+                                            <button
+                                                className="btn btn-sm btn-outline-secondary"
+                                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                disabled={currentPage === totalPages}
+                                            >
+                                                Siguiente
+                                            </button>
                                         </div>
-                                    ))}
-                                </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

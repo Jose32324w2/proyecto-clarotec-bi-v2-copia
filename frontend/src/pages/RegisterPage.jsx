@@ -36,6 +36,13 @@ const RegisterPage = () => {
             return;
         }
 
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,15}$/;
+        if (!passwordRegex.test(formData.password)) {
+            setError("La contraseña debe tener 12-15 caracteres, mayúscula, minúscula, número y símbolo.");
+            setIsLoading(false);
+            return;
+        }
+
         try {
             // 1. Registrar usuario
             await axios.post('http://localhost:8000/api/register/', {
@@ -123,6 +130,11 @@ const RegisterPage = () => {
                                 </div>
 
                                 <div className="row mb-4">
+                                    <div className="col-12 mb-2">
+                                        <small className="text-muted d-block mb-2">
+                                            Tu contraseña debe tener: 12-15 caracteres, mayúscula, minúscula, número y símbolo.
+                                        </small>
+                                    </div>
                                     <div className="col-md-6">
                                         <label className="form-label" htmlFor="password">Contraseña</label>
                                         <input
@@ -133,6 +145,8 @@ const RegisterPage = () => {
                                             value={formData.password}
                                             onChange={handleChange}
                                             required
+                                            minLength={12}
+                                            maxLength={15}
                                         />
                                     </div>
                                     <div className="col-md-6">
@@ -145,6 +159,8 @@ const RegisterPage = () => {
                                             value={formData.confirmPassword}
                                             onChange={handleChange}
                                             required
+                                            minLength={12}
+                                            maxLength={15}
                                         />
                                     </div>
                                 </div>

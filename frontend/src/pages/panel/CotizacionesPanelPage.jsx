@@ -16,6 +16,19 @@ const CotizacionesPanelPage = () => {
 
     const [activeTab, setActiveTab] = useState('pendientes'); // 'pendientes' or 'historial'
 
+    const [sortField, setSortField] = useState('fecha_actualizacion');
+    const [sortOrder, setSortOrder] = useState('desc'); // asc, desc
+
+    const handleSort = (field) => {
+        if (sortField === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortOrder('asc');
+        }
+    };
+
+
     const fetchCotizaciones = useCallback(async () => {
         setLoading(true);
         try {
@@ -66,9 +79,55 @@ const CotizacionesPanelPage = () => {
             filtered = filtered.filter(c => new Date(c.fecha_actualizacion) <= end);
         }
 
+        // Ordenamiento
+        filtered.sort((a, b) => {
+            let valA, valB;
+
+            // Mapeo seguro de campos anidados
+            if (sortField === 'cliente.nombre') {
+                valA = a.cliente?.nombres || '';
+                valB = b.cliente?.nombres || '';
+            } else if (sortField === 'cliente.empresa') {
+                valA = a.cliente?.empresa || '';
+                valB = b.cliente?.empresa || '';
+            } else {
+                valA = a[sortField];
+                valB = b[sortField];
+            }
+
+            // Normalización para strings
+            if (typeof valA === 'string') valA = valA.toLowerCase();
+            if (typeof valB === 'string') valB = valB.toLowerCase();
+
+            if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+            if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
         setFilteredCotizaciones(filtered);
         setCurrentPage(1);
-    }, [searchTerm, startDate, endDate, cotizaciones]);
+    }, [searchTerm, startDate, endDate, cotizaciones, sortField, sortOrder]);
+
+    const handleCancelar = async (id) => {
+        if (!window.confirm('¿Estás seguro de que deseas cancelar esta cotización? Pasará al historial como rechazada/cancelada.')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('accessToken');
+            await axios.post(`http://127.0.0.1:8000/api/pedidos/${id}/rechazar/`, {}, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            // Actualizar lista
+            setCotizaciones(prev => prev.filter(c => c.id !== id));
+            setFilteredCotizaciones(prev => prev.filter(c => c.id !== id));
+        } catch (err) {
+            console.error("Error al cancelar cotización:", err);
+            setError('Error al cancelar la cotización.');
+            setTimeout(() => setError(''), 3000);
+        }
+    };
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -202,11 +261,23 @@ const CotizacionesPanelPage = () => {
                             <table className="table table-hover mb-0">
                                 <thead className="table-light">
                                     <tr>
-                                        <th className="px-4">ID</th>
-                                        <th>Cliente</th>
-                                        <th>Empresa</th>
-                                        <th>Fecha {activeTab === 'pendientes' ? 'Cotizado' : 'Actualización'}</th>
-                                        {activeTab === 'historial' && <th>Estado</th>}
+                                        <th className="px-4" onClick={() => handleSort('id')} style={{ cursor: 'pointer' }}>
+                                            ID {sortField === 'id' && (sortOrder === 'asc' ? <i className="bi bi-caret-up-fill small"></i> : <i className="bi bi-caret-down-fill small"></i>)}
+                                        </th>
+                                        <th onClick={() => handleSort('cliente.nombre')} style={{ cursor: 'pointer' }}>
+                                            Cliente {sortField === 'cliente.nombre' && (sortOrder === 'asc' ? <i className="bi bi-caret-up-fill small"></i> : <i className="bi bi-caret-down-fill small"></i>)}
+                                        </th>
+                                        <th onClick={() => handleSort('cliente.empresa')} style={{ cursor: 'pointer' }}>
+                                            Empresa {sortField === 'cliente.empresa' && (sortOrder === 'asc' ? <i className="bi bi-caret-up-fill small"></i> : <i className="bi bi-caret-down-fill small"></i>)}
+                                        </th>
+                                        <th onClick={() => handleSort('fecha_actualizacion')} style={{ cursor: 'pointer' }}>
+                                            Fecha {activeTab === 'pendientes' ? 'Cotizado' : 'Actualización'} {sortField === 'fecha_actualizacion' && (sortOrder === 'asc' ? <i className="bi bi-caret-up-fill small"></i> : <i className="bi bi-caret-down-fill small"></i>)}
+                                        </th>
+                                        {activeTab === 'historial' && (
+                                            <th onClick={() => handleSort('estado')} style={{ cursor: 'pointer' }}>
+                                                Estado {sortField === 'estado' && (sortOrder === 'asc' ? <i className="bi bi-caret-up-fill small"></i> : <i className="bi bi-caret-down-fill small"></i>)}
+                                            </th>
+                                        )}
                                         <th className="text-center">Items</th>
                                         <th className="text-center">Acciones</th>
                                     </tr>
@@ -254,6 +325,15 @@ const CotizacionesPanelPage = () => {
                                                     >
                                                         <i className="bi bi-file-earmark-pdf"></i> PDF
                                                     </a>
+                                                    {activeTab === 'pendientes' && (
+                                                        <button
+                                                            className="btn btn-sm btn-outline-danger"
+                                                            onClick={() => handleCancelar(cotizacion.id)}
+                                                            title="Cancelar Cotización"
+                                                        >
+                                                            <i className="bi bi-x-circle"></i> Cancelar
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>

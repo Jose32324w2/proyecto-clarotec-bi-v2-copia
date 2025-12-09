@@ -12,8 +12,10 @@ MODELOS CLAVE:
     - ProductoFrecuente: Catálogo de productos para facilitar la carga.
 """
 import uuid
+from decimal import Decimal, ROUND_HALF_UP
 from django.db import models
 from django.conf import settings  # Para referenciar al User model personalizado
+
 
 
 class Cliente(models.Model):
@@ -141,6 +143,22 @@ class Pedido(models.Model):
     # Fase 12: Opciones de envío múltiples
     opciones_envio = models.JSONField(default=dict, blank=True, null=True,
                                       help_text="Almacena las opciones de envío calculadas (ej. {'STARKEN': 5000, 'BLUE': 4000})")
+
+    @property
+    def total_cotizacion(self):
+        """
+        Calcula el total final del pedido incluyendo:
+        - Subtotal de items
+        - Recargo de urgencia
+        - IVA (19%)
+        - Costo de envío
+        """
+        subtotal = sum(item.cantidad * item.precio_unitario for item in self.items.all())
+        recargo = subtotal * (self.porcentaje_urgencia / Decimal('100'))
+        neto = subtotal + recargo
+        iva = neto * Decimal('0.19')
+        total = neto + iva + self.costo_envio_estimado
+        return total.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
 
     def __str__(self):
         return f"Pedido #{self.id} - {self.cliente.nombre} ({self.get_estado_display()})"

@@ -66,3 +66,18 @@ class IsGerencia(permissions.BasePermission):
 
         rol = request.user.rol.nombre if request.user.rol else None
         return rol == 'Gerencia'
+
+
+class IsStaffMember(permissions.BasePermission):
+    """
+    Permiso amplio para staff interno (Vendedor, Administrativa, Gerencia, Despachador).
+    Excluye Clientes.
+    Usado para: Gestión de Clientes, Vistas generales de administración.
+    """
+
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
+        rol = request.user.rol.nombre if request.user.rol else None
+        return rol in ['Vendedor', 'Gerencia', 'Administrativa']

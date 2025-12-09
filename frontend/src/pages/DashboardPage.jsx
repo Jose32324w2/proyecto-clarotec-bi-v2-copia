@@ -42,9 +42,14 @@ const DashboardPage = () => {
                         {user?.rol?.nombre && ` - ${user.rol.nombre}`}
                     </p>
                 </div>
-                <button onClick={handleLogout} className="btn btn-outline-danger">
-                    <i className="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
-                </button>
+                <div>
+                    <Link to="/portal/perfil" className="btn btn-outline-primary me-2">
+                        <i className="bi bi-person-circle me-2"></i>Mi Perfil
+                    </Link>
+                    <button onClick={handleLogout} className="btn btn-outline-danger">
+                        <i className="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+                    </button>
+                </div>
             </div>
 
             <div className="row g-4">
@@ -177,18 +182,7 @@ const DashboardPage = () => {
 
                 {canManageAdmin && (
                     <>
-                        <div className="col-md-4 col-lg-3">
-                            <div className="card h-100 shadow-sm hover-shadow transition-all">
-                                <div className="card-body text-center py-4">
-                                    <div className="rounded-circle bg-secondary bg-opacity-10 p-3 d-inline-block mb-3">
-                                        <i className="bi bi-box-seam fs-1 text-secondary"></i>
-                                    </div>
-                                    <h5 className="card-title">Productos</h5>
-                                    <p className="card-text text-muted small">Administrar catálogo de productos.</p>
-                                    <Link to="/panel/productos" className="btn btn-outline-dark w-100 stretched-link">Gestionar Productos</Link>
-                                </div>
-                            </div>
-                        </div>
+
 
                         <div className="col-md-4 col-lg-3">
                             <div className="card h-100 shadow-sm hover-shadow transition-all">
@@ -205,7 +199,7 @@ const DashboardPage = () => {
                     </>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 
