@@ -36,6 +36,7 @@ const PagosPanelPage = () => {
         if (searchTerm) {
             filtered = filtered.filter(p =>
                 p.cliente.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                p.cliente.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 p.cliente.empresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 p.id.toString().includes(searchTerm)
             );
@@ -65,8 +66,8 @@ const PagosPanelPage = () => {
 
                 // Manejo especial para columnas calculadas o anidadas
                 if (sortConfig.key === 'cliente') {
-                    aValue = `${a.cliente.nombres} ${a.cliente.apellidos}`.toLowerCase();
-                    bValue = `${b.cliente.nombres} ${b.cliente.apellidos}`.toLowerCase();
+                    aValue = `${a.cliente.nombre} ${a.cliente.apellido}`.toLowerCase();
+                    bValue = `${b.cliente.nombre} ${b.cliente.apellido}`.toLowerCase();
                 } else if (sortConfig.key === 'empresa') {
                     aValue = (a.cliente.empresa || '').toLowerCase();
                     bValue = (b.cliente.empresa || '').toLowerCase();
@@ -379,7 +380,7 @@ const PagosPanelPage = () => {
                                             <td className="px-4">
                                                 <span className="badge bg-success">#{pedido.id}</span>
                                             </td>
-                                            <td><strong>{pedido.cliente.nombres} {pedido.cliente.apellidos}</strong></td>
+                                            <td><strong>{pedido.cliente.nombre} {pedido.cliente.apellido}</strong></td>
                                             <td>{pedido.cliente.empresa || '-'}</td>
                                             <td>
                                                 <small>{new Date(pedido.fecha_actualizacion).toLocaleDateString('es-ES')}</small>
@@ -459,7 +460,7 @@ const PagosPanelPage = () => {
                             <div className="row mb-4">
                                 <div className="col-md-6">
                                     <h6 className="text-muted mb-2">Información del Cliente</h6>
-                                    <p className="mb-1"><strong>Nombre:</strong> {selectedPedido.cliente.nombres} {selectedPedido.cliente.apellidos}</p>
+                                    <p className="mb-1"><strong>Nombre:</strong> {selectedPedido.cliente.nombre} {selectedPedido.cliente.apellido}</p>
                                     <p className="mb-1"><strong>Empresa:</strong> {selectedPedido.cliente.empresa || 'N/A'}</p>
                                     <p className="mb-1"><strong>Email:</strong> {selectedPedido.cliente.email}</p>
                                     <p className="mb-0"><strong>Teléfono:</strong> {selectedPedido.cliente.telefono || 'N/A'}</p>

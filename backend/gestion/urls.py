@@ -80,7 +80,9 @@ urlpatterns = [
 
     # Panel Despachador
     path('pedidos/para-despachar/', PedidosParaDespacharListView.as_view(), name='panel-pedidos-despachar'),
-    path('pedidos/historial-despachos/', PedidosHistorialDespachosListView.as_view(), name='panel-pedidos-historial-despachos'),
+    path('pedidos/historial-despachos/',
+         PedidosHistorialDespachosListView.as_view(),
+         name='panel-pedidos-historial-despachos'),
     path('pedidos/<int:pk>/marcar-despachado/', MarcarComoDespachadoView.as_view(), name='marcar-despachado'),
 
     # Portal Cliente
@@ -95,7 +97,7 @@ urlpatterns = [
     # Nuevos Endpoints (Fase 13)
     path('pedidos/historial-cotizaciones/', PedidosHistorialCotizacionesListView.as_view(),
          name='panel-pedidos-historial-cotizaciones'),
-    path('productos-crud/sincronizar/', SincronizarProductosAPIView.as_view(), name='sincronizar-productos'),
+    path('productos/sincronizar/', SincronizarProductosAPIView.as_view(), name='sincronizar-productos'),
 
     # BI
     path('bi/rentabilidad/', RentabilidadHistoricaAPIView.as_view(), name='bi-rentabilidad'),

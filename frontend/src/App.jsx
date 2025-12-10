@@ -95,43 +95,56 @@ const Navbar = () => {
 
 
 
-function App() {
+
+export const AppContent = () => {
     const { token } = useAuth();
+
+    return (
+        <>
+            <Navbar />
+            <main>
+                <Routes>
+                    {/* --- RUTAS PÚBLICAS --- */}
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/solicitar-cotizacion" element={<SolicitudPage />} />
+                    <Route path="/portal/pedidos/:id_seguimiento" element={<PortalPage />} />
+                    <Route path="/portal/mis-pedidos" element={<ClientHistoryPage />} />
+                    <Route path="/portal/perfil" element={<ProfilePage />} />
+
+                    {/* --- RUTAS PROTEGIDAS --- */}
+                    <Route element={<ProtectedRoute />}>
+                        <Route path="/inicio" element={<DashboardPage />} />
+                        <Route path="/panel/solicitudes" element={<SolicitudesPanelPage />} />
+                        <Route path="/panel/cotizacion/:pedidoId" element={<CotizacionDetailPage />} />
+                        <Route path="/panel/cotizaciones" element={<CotizacionesPanelPage />} />
+                        <Route path="/panel/pagos" element={<PagosPanelPage />} />
+                        <Route path="/panel/despachos" element={<DespachosPanelPage />} />
+                        {/* <Route path="/panel/productos" element={<ProductosPanelPage />} /> Eliminado a pedido del usuario */}
+                        <Route path="/panel/clientes" element={<ClientesPanelPage />} />
+                        <Route path="/panel/bi" element={<BIPanelPage />} />
+                        <Route path="/panel/bi/retention" element={<ClientRetentionPage />} />
+
+                    </Route>
+
+                    {/* Redirección por defecto */}
+                    <Route path="*" element={token ? <Navigate to="/inicio" /> : <Navigate to="/" />} />
+                </Routes>
+            </main>
+        </>
+    );
+};
+
+function App() {
+    // El hook useAuth se usa dentro de Navbar y componentes hijos, pero si necesitamos algo global aqui:
+    // const { token } = useAuth(); // Movido dentro de componentes que lo necesiten o mantener si es critico.
+    // Nota: Navbar usa useAuth. ProtectedRoute usa useAuth.
 
     return (
         <CartProvider>
             <Router>
-                <Navbar />
-                <main>
-                    <Routes>
-                        {/* --- RUTAS PÚBLICAS --- */}
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route path="/register" element={<RegisterPage />} />
-                        <Route path="/solicitar-cotizacion" element={<SolicitudPage />} />
-                        <Route path="/portal/pedidos/:id_seguimiento" element={<PortalPage />} />
-                        <Route path="/portal/mis-pedidos" element={<ClientHistoryPage />} />
-                        <Route path="/portal/perfil" element={<ProfilePage />} />
-
-                        {/* --- RUTAS PROTEGIDAS --- */}
-                        <Route element={<ProtectedRoute />}>
-                            <Route path="/inicio" element={<DashboardPage />} />
-                            <Route path="/panel/solicitudes" element={<SolicitudesPanelPage />} />
-                            <Route path="/panel/cotizacion/:pedidoId" element={<CotizacionDetailPage />} />
-                            <Route path="/panel/cotizaciones" element={<CotizacionesPanelPage />} />
-                            <Route path="/panel/pagos" element={<PagosPanelPage />} />
-                            <Route path="/panel/despachos" element={<DespachosPanelPage />} />
-                            {/* <Route path="/panel/productos" element={<ProductosPanelPage />} /> Eliminado a pedido del usuario */}
-                            <Route path="/panel/clientes" element={<ClientesPanelPage />} />
-                            <Route path="/panel/bi" element={<BIPanelPage />} />
-                            <Route path="/panel/bi/retention" element={<ClientRetentionPage />} />
-
-                        </Route>
-
-                        {/* Redirección por defecto */}
-                        <Route path="*" element={token ? <Navigate to="/inicio" /> : <Navigate to="/" />} />
-                    </Routes>
-                </main>
+                <AppContent />
             </Router>
         </CartProvider>
     );

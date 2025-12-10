@@ -521,7 +521,6 @@ const CotizacionDetailPage = () => {
                         <button
                             className="btn btn-primary"
                             onClick={handleSaveChanges}
-                            onClick={handleSaveChanges}
                             disabled={saving || sendingEmail || isReadOnly}
                         >
                             <i className="bi bi-save me-1"></i>

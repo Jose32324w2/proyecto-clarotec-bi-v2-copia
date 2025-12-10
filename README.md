@@ -140,5 +140,57 @@ Si necesitas recargar datos desde el Excel original (solo inicial):
 python manage.py import_historical_data
 ```
 
+## 🧪 Aseguramiento de Calidad (QA) y Pruebas
+Este proyecto sigue estándares estrictos de calidad de software (ISO/IEC 25010) y pruebas en múltiples capas.
+
+### 1. Backend (Python/Django)
+Valida la lógica de negocio, modelos, vistas y seguridad.
+
+*   **Pruebas Unitarias e Integración (`pytest`):**
+    Ejecuta más de 25 pruebas críticas cubriendo Seguridad, Pagos, BI y CRUD.
+    ```bash
+    cd backend
+    pytest -v
+    ```
+
+*   **Estándares de Código PEP 8 (`flake8`):**
+    Verifica que el código cumpla con la guía de estilo oficial de Python.
+    ```bash
+    cd backend
+    flake8
+    ```
+    *(Debe retornar vacío si está limpio).*
+
+### 2. Frontend (React)
+Valida la interfaz de usuario, componentes y flujos de navegación.
+
+*   **Pruebas de Componentes (`Jest`):**
+    Verifica renderizado, RBAC (Permisos por Rol) y lógica de formularios.
+    ```bash
+    cd frontend
+    # Ejecuta pruebas en modo interactivo (Watch Mode)
+    npm test
+    
+    # Ejecuta una sola pasada (CI/CD friendly)
+    npm test -- --watchAll=false
+    ```
+
+*   **Calidad de Código y Linter (`ESLint`):**
+    Analiza busca de errores de sintaxis y malas prácticas en React.
+    ```bash
+    cd frontend
+    npm run lint
+    ```
+
+### 3. Pruebas End-to-End (E2E)
+Simula un usuario real navegando por el sitio usando **Cypress**.
+
+*   **Ejecutar Cypress:**
+    ```bash
+    cd frontend
+    npx cypress open
+    ```
+    *Nota: Requiere que backend y frontend estén corriendo.*
+
 ---
 Desarrollado para Clarotec.

@@ -26,6 +26,7 @@ const SolicitudPage = () => {
     // Form State for Client Data
     const [clientData, setClientData] = useState({
         nombre: '',
+        apellido: '',
         email: '',
         empresa: '',
         telefono: '',
@@ -86,8 +87,8 @@ const SolicitudPage = () => {
         if (user) {
             setClientData(prev => ({
                 ...prev,
-                nombres: user.first_name || '',
-                apellidos: user.last_name || '',
+                nombre: user.first_name || '',
+                apellido: user.last_name || '',
                 email: user.email || ''
             }));
         }
@@ -112,8 +113,8 @@ const SolicitudPage = () => {
 
         const payload = {
             cliente: {
-                nombres: clientData.nombres,
-                apellidos: clientData.apellidos,
+                nombre: clientData.nombre,
+                apellido: clientData.apellido,
                 email: clientData.email,
                 empresa: clientData.empresa,
                 telefono: clientData.telefono
@@ -133,7 +134,7 @@ const SolicitudPage = () => {
             await axios.post('http://127.0.0.1:8000/api/solicitudes/', payload);
             setSubmitStatus({ loading: false, success: true, error: '' });
             clearCart();
-            setClientData({ nombres: '', apellidos: '', email: '', empresa: '', telefono: '', region: '', comuna: '' });
+            setClientData({ nombre: '', apellido: '', email: '', empresa: '', telefono: '', region: '', comuna: '' });
             setComunasDisponibles([]);
         } catch (error) {
             console.error("Error submitting request:", error);
@@ -254,14 +255,14 @@ const SolicitudPage = () => {
                                         <div className="row g-2">
                                             <div className="col-6">
                                                 <input
-                                                    type="text" className="form-control form-control-sm" placeholder="Nombres *"
-                                                    name="nombres" value={clientData.nombres} onChange={handleClientChange} required
+                                                    type="text" className="form-control form-control-sm" placeholder="Nombre *"
+                                                    name="nombre" value={clientData.nombre} onChange={handleClientChange} required
                                                 />
                                             </div>
                                             <div className="col-6">
                                                 <input
-                                                    type="text" className="form-control form-control-sm" placeholder="Apellidos *"
-                                                    name="apellidos" value={clientData.apellidos} onChange={handleClientChange} required
+                                                    type="text" className="form-control form-control-sm" placeholder="Apellido *"
+                                                    name="apellido" value={clientData.apellido} onChange={handleClientChange} required
                                                 />
                                             </div>
                                         </div>
@@ -318,7 +319,7 @@ const SolicitudPage = () => {
 
                                     <button
                                         onClick={handleSubmit}
-                                        disabled={cart.length === 0 || !clientData.nombres || !clientData.apellidos || !clientData.email || !clientData.region || !clientData.comuna || submitStatus.loading}
+                                        disabled={cart.length === 0 || !clientData.nombre || !clientData.apellido || !clientData.email || !clientData.region || !clientData.comuna || submitStatus.loading}
                                         className="btn btn-success w-100 py-2 fw-bold"
                                     >
                                         {submitStatus.loading ? 'Enviando...' : 'Solicitar Cotización Formal →'}

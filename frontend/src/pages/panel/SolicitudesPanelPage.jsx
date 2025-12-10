@@ -71,6 +71,7 @@ const SolicitudesPanelPage = () => {
             const term = searchTerm.toLowerCase();
             filtered = filtered.filter(s =>
                 s.cliente.nombre.toLowerCase().includes(term) ||
+                s.cliente.apellido.toLowerCase().includes(term) ||
                 s.cliente.empresa.toLowerCase().includes(term) ||
                 s.cliente.email.toLowerCase().includes(term) ||
                 s.id.toString().includes(term)
@@ -94,8 +95,8 @@ const SolicitudesPanelPage = () => {
 
             // Mapeo seguro de campos anidados
             if (sortField === 'cliente.nombre') {
-                valA = a.cliente?.nombre || '';
-                valB = b.cliente?.nombre || '';
+                valA = `${a.cliente?.nombre || ''} ${a.cliente?.apellido || ''}`;
+                valB = `${b.cliente?.nombre || ''} ${b.cliente?.apellido || ''}`;
             } else if (sortField === 'cliente.empresa') {
                 valA = a.cliente?.empresa || '';
                 valB = b.cliente?.empresa || '';
@@ -295,7 +296,7 @@ const SolicitudesPanelPage = () => {
                                                 <span className="badge bg-primary">#{solicitud.id}</span>
                                             </td>
                                             <td>
-                                                <strong>{solicitud.cliente.nombre}</strong>
+                                                <strong>{solicitud.cliente.nombre} {solicitud.cliente.apellido}</strong>
                                             </td>
                                             <td>{solicitud.cliente.empresa || '-'}</td>
                                             <td>
@@ -366,7 +367,7 @@ const SolicitudesPanelPage = () => {
                             <div className="row mb-4">
                                 <div className="col-md-6">
                                     <h6 className="text-muted mb-2">Información del Cliente</h6>
-                                    <p className="mb-1"><strong>Nombre:</strong> {selectedSolicitud.cliente.nombre}</p>
+                                    <p className="mb-1"><strong>Nombre:</strong> {selectedSolicitud.cliente.nombre} {selectedSolicitud.cliente.apellido}</p>
                                     <p className="mb-1"><strong>Empresa:</strong> {selectedSolicitud.cliente.empresa || 'N/A'}</p>
                                     <p className="mb-1"><strong>Email:</strong> {selectedSolicitud.cliente.email}</p>
                                     <p className="mb-0"><strong>Teléfono:</strong> {selectedSolicitud.cliente.telefono || 'N/A'}</p>

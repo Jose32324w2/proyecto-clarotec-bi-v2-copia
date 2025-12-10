@@ -266,7 +266,7 @@ const BIPanelPage = () => {
                                         <Form.Check
                                             key={c.id}
                                             type="checkbox"
-                                            label={c.nombre}
+                                            label={`${c.nombre} ${c.apellido}`}
                                             checked={selectedClientes.includes(idStr)}
                                             onChange={() => toggleCliente(c.id)}
                                         />

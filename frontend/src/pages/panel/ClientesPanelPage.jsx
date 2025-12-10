@@ -9,6 +9,7 @@ const ClientesPanelPage = () => {
     const [editingClient, setEditingClient] = useState(null);
     const [formData, setFormData] = useState({
         nombre: '',
+        apellido: '',
         email: '',
         empresa: '',
         telefono: ''
@@ -34,6 +35,7 @@ const ClientesPanelPage = () => {
             const term = searchTerm.toLowerCase();
             const matchesSearch =
                 client.nombre?.toLowerCase().includes(term) ||
+                client.apellido?.toLowerCase().includes(term) ||
                 client.email?.toLowerCase().includes(term) ||
                 client.empresa?.toLowerCase().includes(term);
 
@@ -103,6 +105,7 @@ const ClientesPanelPage = () => {
         setEditingClient(client);
         setFormData({
             nombre: client.nombre,
+            apellido: client.apellido,
             email: client.email,
             empresa: client.empresa || '',
             telefono: client.telefono || ''
@@ -181,7 +184,7 @@ const ClientesPanelPage = () => {
                             <tbody>
                                 {filteredClientes.map(client => (
                                     <tr key={client.id}>
-                                        <td className="ps-4 fw-bold">{client.nombre}</td>
+                                        <td className="ps-4 fw-bold">{client.nombre} {client.apellido}</td>
                                         <td>{client.email}</td>
                                         <td>{client.empresa || '-'}</td>
                                         <td>{client.telefono || '-'}</td>
@@ -232,6 +235,10 @@ const ClientesPanelPage = () => {
                                             <input type="text" className="form-control" name="nombre" value={formData.nombre} onChange={handleInputChange} required />
                                         </div>
                                         <div className="mb-3">
+                                            <label className="form-label">Apellido</label>
+                                            <input type="text" className="form-control" name="apellido" value={formData.apellido} onChange={handleInputChange} required />
+                                        </div>
+                                        <div className="mb-3">
                                             <label className="form-label">Email</label>
                                             <input type="email" className="form-control" name="email" value={formData.email} onChange={handleInputChange} required />
                                         </div>
@@ -252,9 +259,10 @@ const ClientesPanelPage = () => {
                             </div>
                         </div>
                     </div>
-                )}
-            </div>
-        </div>
+                )
+                }
+            </div >
+        </div >
     );
 };
 

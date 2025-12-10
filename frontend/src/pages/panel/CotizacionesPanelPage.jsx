@@ -63,6 +63,7 @@ const CotizacionesPanelPage = () => {
         if (searchTerm) {
             filtered = filtered.filter(c =>
                 c.cliente.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                c.cliente.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 c.cliente.empresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 c.id.toString().includes(searchTerm)
             );
@@ -85,8 +86,8 @@ const CotizacionesPanelPage = () => {
 
             // Mapeo seguro de campos anidados
             if (sortField === 'cliente.nombre') {
-                valA = a.cliente?.nombres || '';
-                valB = b.cliente?.nombres || '';
+                valA = `${a.cliente?.nombre || ''} ${a.cliente?.apellido || ''}`;
+                valB = `${b.cliente?.nombre || ''} ${b.cliente?.apellido || ''}`;
             } else if (sortField === 'cliente.empresa') {
                 valA = a.cliente?.empresa || '';
                 valB = b.cliente?.empresa || '';
@@ -288,7 +289,7 @@ const CotizacionesPanelPage = () => {
                                             <td className="px-4">
                                                 <span className="badge bg-warning text-dark">#{cotizacion.id}</span>
                                             </td>
-                                            <td><strong>{cotizacion.cliente.nombres} {cotizacion.cliente.apellidos}</strong></td>
+                                            <td><strong>{cotizacion.cliente.nombre} {cotizacion.cliente.apellido}</strong></td>
                                             <td>{cotizacion.cliente.empresa || '-'}</td>
                                             <td>
                                                 <small>{new Date(cotizacion.fecha_actualizacion).toLocaleDateString('es-ES')}</small>

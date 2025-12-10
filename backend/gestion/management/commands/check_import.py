@@ -13,7 +13,17 @@ class Command(BaseCommand):
 
             f.write("\n=== ÚLTIMOS 5 PEDIDOS ===\n")
             for p in Pedido.objects.order_by('-id')[:5]:
-                f.write(f"ID: {p.id} | Cliente: {p.cliente.nombre} | Estado: {p.estado} | Solicitud: {p.fecha_solicitud.date()} | Despacho: {p.fecha_despacho.date() if p.fecha_despacho else 'None'} | Región: {p.region} | Comuna: {p.comuna} | Transporte: {p.transportista} (${p.costo_envio_estimado})\n")
+                f.write(
+                    f"ID: {
+                        p.id} | Cliente: {
+                        p.cliente.nombre} | Estado: {
+                        p.estado} | Solicitud: {
+                        p.fecha_solicitud.date()} | Despacho: {
+                        p.fecha_despacho.date() if p.fecha_despacho else 'None'} | Región: {
+                            p.region} | Comuna: {
+                                p.comuna} | Transporte: {
+                                    p.transportista} (${
+                                        p.costo_envio_estimado})\n")
 
             f.write("\n=== ÚLTIMOS 5 ITEMS ===\n")
             for i in ItemsPedido.objects.order_by('-id')[:5]:

@@ -2,6 +2,7 @@ import re
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
+
 class CustomComplexPasswordValidator:
     """
     Valida que la contraseña cumpla con:
@@ -9,7 +10,7 @@ class CustomComplexPasswordValidator:
     - Contenga al menos una mayúscula, una minúscula, un dígito y un símbolo.
     - Puede contener espacios.
     """
-    
+
     def validate(self, password, user=None):
         # 1. Longitud (12-15)
         if not (12 <= len(password) <= 15):

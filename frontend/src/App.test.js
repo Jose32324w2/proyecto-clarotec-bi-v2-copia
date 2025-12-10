@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import App from './App';
+import { AppContent } from './App';
+import { MemoryRouter } from 'react-router-dom';
 
 // Mock del hook useAuth para evitar errores de Contexto
 jest.mock('./hooks/useAuth', () => ({
@@ -11,7 +12,11 @@ jest.mock('./hooks/useAuth', () => ({
 }));
 
 test('renders landing page title', () => {
-  render(<App />);
+  render(
+    <MemoryRouter>
+      <AppContent />
+    </MemoryRouter>
+  );
   // Buscamos un texto que realmente exista en HomePage.jsx
   const titleElement = screen.getByText(/Acceso Trabajadores/i);
   expect(titleElement).toBeInTheDocument();

@@ -17,19 +17,32 @@ from django.db import models
 from django.conf import settings  # Para referenciar al User model personalizado
 
 
-
 class Cliente(models.Model):
     """
     Almacena la información de contacto de un cliente.
     No es un usuario del sistema, sino una entidad externa que solicita cotizaciones.
     """
-    nombre = models.CharField(max_length=255, help_text="Campo legado. Se eliminará tras validar 'nombres' y 'apellidos'.")
-    nombres = models.CharField(max_length=255, default="", help_text="Nombres del cliente (Ej. Juan Andrés)")
-    apellidos = models.CharField(max_length=255, default="", help_text="Apellidos del cliente (Ej. Pérez González)")
+    # Campos Normalizados (Singular - 3NF)
+    nombre = models.CharField(max_length=255, default="", help_text="Primer nombre o nombres de pila (Ej. Juan Andrés)")
+    apellido = models.CharField(max_length=255, default="", help_text="Apellido o apellidos (Ej. Pérez González)")
     empresa = models.CharField(max_length=255, blank=True)
     email = models.EmailField(unique=True, help_text="Email único para identificar al cliente.")
     telefono = models.CharField(max_length=50, blank=True, null=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    # Propiedad de Compatibilidad (Legacy) - READ ONLY
+    # Permite que el código antiguo que llama a 'cliente.nombre' siga funcionando
+    # devolviendo el nombre completo concatenado.
+    @property
+    def nombre_completo(self):
+        """Devuelve el nombre completo concatenado."""
+        return f"{self.nombre} {self.apellido}".strip()
+
+    # Mantenemos .nombre apuntando a la propiedad calculada
+    # IMPORTANTE: Esto NO es un campo de base de datos.
+    @property
+    def nombre_legacy(self):
+        return self.nombre_completo
 
     # Campos para Retención (Churn)
     last_retention_email_sent_at = models.DateTimeField(
@@ -44,7 +57,7 @@ class Cliente(models.Model):
     retention_status = models.CharField(max_length=20, choices=RETENTION_STATUS_CHOICES, default='pending')
 
     def __str__(self):
-        return f"{self.nombre} ({self.empresa})"
+        return f"{self.nombre_completo} ({self.empresa})"
 
 
 class ProductoFrecuente(models.Model):
@@ -104,13 +117,13 @@ class Pedido(models.Model):
     porcentaje_urgencia = models.DecimalField(
         max_digits=5,
         decimal_places=2,
-        default=0.00,
+        default=Decimal('0.00'),
         help_text="Porcentaje de recargo por urgencia (ej. 5.5 para 5.5%)"
     )
     costo_envio_estimado = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        default=0.00,
+        default=Decimal('0.00'),
         help_text="Costo estimado del envío para la cotización."
     )
 

@@ -25,8 +25,8 @@ class ProductoFrecuenteSerializer(serializers.ModelSerializer):
 
 
 class ClienteInputSerializer(serializers.Serializer):
-    nombres = serializers.CharField(max_length=200)
-    apellidos = serializers.CharField(max_length=200)
+    nombre = serializers.CharField(max_length=200)
+    apellido = serializers.CharField(max_length=200)
     email = serializers.EmailField()
     empresa = serializers.CharField(max_length=200, required=False, allow_blank=True)
     telefono = serializers.CharField(max_length=50, required=False, allow_blank=True)
@@ -91,14 +91,14 @@ class SolicitudCreacionSerializer(serializers.Serializer):
                 # 1. Crear o actualizar Cliente
                 print(f"Procesando cliente: {cliente_data.get('email')}")
                 # Construimos el nombre legado por compatibilidad temporal (opcional)
-                full_name_legacy = f"{cliente_data['nombres']} {cliente_data['apellidos']}".strip()
+                # full_name_legacy = f"{cliente_data['nombre']} {cliente_data['apellido']}".strip()
 
                 cliente, created = Cliente.objects.get_or_create(
                     email=cliente_data['email'],
                     defaults={
-                        'nombres': cliente_data['nombres'],
-                        'apellidos': cliente_data['apellidos'],
-                        'nombre': full_name_legacy,  # Mantener compatibilidad temporal
+                        'nombre': cliente_data['nombre'],
+                        'apellido': cliente_data['apellido'],
+                        # 'nombre': full_name_legacy,  # YA NO EXISTE EL CAMPO FISICO
                         'empresa': cliente_data.get('empresa', ''),
                         'telefono': cliente_data.get('telefono', '')
                     }
@@ -106,8 +106,8 @@ class SolicitudCreacionSerializer(serializers.Serializer):
 
                 # Si el cliente ya existía, actualizamos sus datos nuevos si vienen
                 if not created:
-                    cliente.nombres = cliente_data['nombres']
-                    cliente.apellidos = cliente_data['apellidos']
+                    cliente.nombre = cliente_data['nombre']
+                    cliente.apellido = cliente_data['apellido']
                     # Si empresa/telefono vienen vacíos, no los borramos, mantenemos lo que había
                     if cliente_data.get('empresa'):
                         cliente.empresa = cliente_data['empresa']
@@ -115,7 +115,7 @@ class SolicitudCreacionSerializer(serializers.Serializer):
                         cliente.telefono = cliente_data['telefono']
 
                     # Actualizar campo legado 'nombre' para mantener consistencia con Frontend
-                    cliente.nombre = f"{cliente.nombres} {cliente.apellidos}".strip()
+                    # cliente.nombre = f"{cliente.nombre} {cliente.apellido}".strip()
                     cliente.save()
 
                 print(f"Cliente obtenido/creado: {cliente.id} (Creado: {created})")

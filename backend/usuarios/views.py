@@ -32,7 +32,6 @@ class MeView(APIView):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
-
     def patch(self, request):
         """
         Permite actualizar los datos del usuario (Nombre, Apellido)
@@ -55,12 +54,11 @@ class MeView(APIView):
             updated = False
 
             if 'first_name' in data:
-                cliente.nombres = data['first_name']
+                cliente.nombre = data['first_name']
                 updated = True
 
             if 'last_name' in data:
-                cliente.apellidos = data['last_name']
-                cliente.nombre = f"{cliente.nombres} {cliente.apellidos}"  # Legacy
+                cliente.apellido = data['last_name']
                 updated = True
 
             if 'telefono' in data:
@@ -106,7 +104,8 @@ class ClientRegisterAPIView(APIView):
             # Buscar rol 'Cliente', si no existe se debería manejar el error o crearlo (lo ideal es que exista)
             rol_cliente = Roles.objects.get(nombre='Cliente')
         except Roles.DoesNotExist:
-            return Response({'error': 'Configuración de roles incompleta. Contacte al administrador.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'Configuración de roles incompleta. Contacte al administrador.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         try:
             # Crear usuario
@@ -117,7 +116,8 @@ class ClientRegisterAPIView(APIView):
                 last_name=last_name,
                 rol=rol_cliente
             )
-            return Response({'status': 'Usuario creado exitosamente. Puede iniciar sesión.'}, status=status.HTTP_201_CREATED)
+            return Response({'status': 'Usuario creado exitosamente. Puede iniciar sesión.'},
+                            status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': f"Error creando usuario: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -153,5 +153,6 @@ class ChangePasswordView(APIView):
             user.save()
             return Response({'status': 'Contraseña actualizada correctamente.'}, status=status.HTTP_200_OK)
         except Exception as e:
-             # validate_password lanza ValidationError con una lista de mensajes
-            return Response({'error': list(e.messages) if hasattr(e, 'messages') else str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            # validate_password lanza ValidationError con una lista de mensajes
+            return Response({'error': list(e.messages) if hasattr(e, 'messages')
+                            else str(e)}, status=status.HTTP_400_BAD_REQUEST)
