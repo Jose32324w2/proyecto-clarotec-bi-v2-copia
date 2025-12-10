@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Servicio de Base de Datos MySQL
+  db:
+    image: mysql:8.0
+    container_name: clarotec_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: clarotec_db
+      MYSQL_ROOT_PASSWORD: root_password_segura
+      MYSQL_USER: clarotec_user
+      MYSQL_PASSWORD: user_password_segura
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3307:3306" # Mapeamos al 3307 local para no chocar con tu MySQL local
+
+  # Servicio Backend Django
+  backend:
+    build: ./backend
+    container_name: clarotec_backend
+    restart: always
+    command: gunicorn --bind 0.0.0.0:8000 clarotec_api.wsgi:application
+    volumes:
+      - ./backend:/app # Hot-reload en desarrollo (opcional)
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - ./backend/.env.docker # Archivo de variables específico para Docker
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=clarotec_db
+      - DB_USER=clarotec_user
+      - DB_PASSWORD=user_password_segura
+
+volumes:
+  db_data:

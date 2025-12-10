@@ -25,12 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-o&&a**dkxtt+&1i7j37uv2!gtjorpp5a$ju9)$5_v6%bkbg$2s'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-o&&a**dkxtt+&1i7j37uv2!gtjorpp5a$ju9)$5_v6%bkbg$2s')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
 
 # Application definition
@@ -96,11 +96,11 @@ WSGI_APPLICATION = 'clarotec_api.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'clarotec_db',
-        'USER': 'root',
-        'PASSWORD': 'sxS1s992_sSS',  # <-- Asegúrate de que es correcta
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        'NAME': os.environ.get('DB_NAME', 'clarotec_db'),
+        'USER': os.environ.get('DB_USER', 'root'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'sxS1s992_sSS'),  # Fallback for dev
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
     }
 }
 
@@ -143,6 +143,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # Required for production
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -151,10 +152,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Configuración de CORS
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # El origen de tu frontend de React
-    "http://127.0.0.1:3000",  # A veces el navegador usa esta IP en lugar de localhost
-]
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', "http://localhost:3000,http://127.0.0.1:3000").split(',')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -180,6 +178,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'correoclarotec@gmail.com'
-EMAIL_HOST_PASSWORD = 'jtgp lpwo bzun gdrc'  # Contraseña de aplicación
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'correoclarotec@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'jtgp lpwo bzun gdrc')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
