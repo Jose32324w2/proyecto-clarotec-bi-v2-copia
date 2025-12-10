@@ -24,7 +24,49 @@ const SolicitudPage = () => {
     const [frequentProducts, setFrequentProducts] = useState([]);
     const [loadingProducts, setLoadingProducts] = useState(true);
 
-    // ... (omitted lines)
+    // Form State for Client Data
+    const [clientData, setClientData] = useState({
+        nombre: '',
+        apellido: '',
+        email: '',
+        empresa: '',
+        telefono: '',
+        region: '',
+        comuna: ''
+    });
+    const [submitStatus, setSubmitStatus] = useState({ loading: false, success: false, error: '' });
+    const [comunasDisponibles, setComunasDisponibles] = useState([]);
+
+    // Estado para búsqueda y paginación del catálogo
+    const [catalogSearch, setCatalogSearch] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6;
+
+    // Lógica de filtrado y paginación
+    const filteredProducts = React.useMemo(() => {
+        let filtered = frequentProducts;
+
+        // 1. Filtrar por búsqueda
+        if (catalogSearch) {
+            const term = catalogSearch.toLowerCase();
+            filtered = filtered.filter(p => p.nombre.toLowerCase().includes(term));
+        }
+
+        // 2. Deduplicación simple por nombre (visual) para evitar mostrar productos idénticos
+        const uniqueNames = new Set();
+        return filtered.filter(p => {
+            const nameLower = p.nombre.toLowerCase().trim();
+            if (uniqueNames.has(nameLower)) return false;
+            uniqueNames.add(nameLower);
+            return true;
+        });
+    }, [frequentProducts, catalogSearch]);
+
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    const currentProducts = filteredProducts.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
     useEffect(() => {
         // Fetch frequent products
@@ -41,7 +83,30 @@ const SolicitudPage = () => {
         fetchProducts();
     }, []);
 
-    // ... (omitted lines)
+    // Pre-fill user data if logged in
+    useEffect(() => {
+        if (user) {
+            setClientData(prev => ({
+                ...prev,
+                nombre: user.first_name || '',
+                apellido: user.last_name || '',
+                email: user.email || ''
+            }));
+        }
+    }, [user]);
+
+    const handleClientChange = (e) => {
+        const { name, value } = e.target;
+
+        if (name === 'region') {
+            // Al cambiar región, actualizamos las comunas disponibles y reseteamos la comuna seleccionada
+            const regionData = REGIONES_Y_COMUNAS.find(r => r.region === value);
+            setComunasDisponibles(regionData ? regionData.comunas : []);
+            setClientData({ ...clientData, region: value, comuna: '' });
+        } else {
+            setClientData({ ...clientData, [name]: value });
+        }
+    };
 
     const handleSubmit = async () => {
         if (cart.length === 0) return;
