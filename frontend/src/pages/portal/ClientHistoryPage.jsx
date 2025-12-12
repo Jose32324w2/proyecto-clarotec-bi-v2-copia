@@ -14,7 +14,7 @@ const ClientHistoryPage = () => {
         const fetchHistory = async () => {
             try {
                 // El token se inyecta automáticamente por el interceptor
-                const response = await axios.get('http://127.0.0.1:8000/api/portal/historial/');
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/portal/historial/`);
                 setPedidos(response.data);
             } catch (err) {
                 console.error("Error fetching history:", err);

@@ -47,7 +47,7 @@ const SolicitudesPanelPage = () => {
                 return;
             }
 
-            const response = await axios.get('http://127.0.0.1:8000/api/pedidos/solicitudes/', {
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/pedidos/solicitudes/`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -132,7 +132,7 @@ const SolicitudesPanelPage = () => {
 
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.post(`http://127.0.0.1:8000/api/pedidos/${id}/rechazar/`, {}, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/pedidos/${id}/rechazar/`, {}, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

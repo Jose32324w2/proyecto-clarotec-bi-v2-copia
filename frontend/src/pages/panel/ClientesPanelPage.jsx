@@ -65,7 +65,7 @@ const ClientesPanelPage = () => {
     const fetchClientes = async () => {
         try {
             const token = localStorage.getItem('accessToken');
-            const response = await axios.get('http://localhost:8000/api/clientes-crud/', {
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/clientes-crud/`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setClientes(response.data);
@@ -89,7 +89,7 @@ const ClientesPanelPage = () => {
         const token = localStorage.getItem('token');
         try {
             if (editingClient) {
-                await axios.put(`http://localhost:8000/api/clientes-crud/${editingClient.id}/`, formData, {
+                await axios.put(`${process.env.REACT_APP_API_URL}/clientes-crud/${editingClient.id}/`, formData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }

@@ -35,7 +35,7 @@ const PortalPage = () => {
         const fetchPedido = async () => {
             if (!id_seguimiento) return;
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/api/portal/pedidos/${id_seguimiento}/`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/portal/pedidos/${id_seguimiento}/`);
                 setPedido(response.data);
 
                 // Inicializar selección si ya existe
@@ -60,7 +60,7 @@ const PortalPage = () => {
         // Opcional: Guardar selección inmediatamente o esperar a que acepte.
         // Vamos a guardarlo inmediatamente para que persista si recarga.
         try {
-            await axios.post(`http://127.0.0.1:8000/api/portal/pedidos/${id_seguimiento}/seleccionar-envio/`, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/portal/pedidos/${id_seguimiento}/seleccionar-envio/`, {
                 metodo_envio: method,
                 costo: cost
             });
@@ -81,7 +81,7 @@ const PortalPage = () => {
         setActionInProgress(true);
         setError('');
         try {
-            await axios.post(`http://127.0.0.1:8000/api/portal/pedidos/${id_seguimiento}/accion/`, { accion });
+            await axios.post(`${process.env.REACT_APP_API_URL}/portal/pedidos/${id_seguimiento}/accion/`, { accion });
             // response.data solo trae { status: ... }, no el objeto completo.
             // Actualizamos el estado localmente.
             setPedido(prev => ({ ...prev, estado: accion === 'aceptar' ? 'aceptado' : 'rechazado' }));
@@ -101,7 +101,7 @@ const PortalPage = () => {
         setActionInProgress(true);
         setError('');
         try {
-            await axios.post(`http://127.0.0.1:8000/api/portal/pedidos/${id_seguimiento}/confirmar-recepcion/`);
+            await axios.post(`${process.env.REACT_APP_API_URL}/portal/pedidos/${id_seguimiento}/confirmar-recepcion/`);
             // Actualizamos solo el estado localmente, ya que la respuesta solo trae { status: ... }
             setPedido(prev => ({ ...prev, estado: 'completado' }));
             alert("¡Gracias por tu confirmación! Hemos cerrado el pedido.");
@@ -114,7 +114,7 @@ const PortalPage = () => {
     };
 
     const handleDownloadPDF = () => {
-        window.open(`http://127.0.0.1:8000/api/pedidos/${pedido.id}/pdf/`, '_blank');
+        window.open(`${process.env.REACT_APP_API_URL}/pedidos/${pedido.id}/pdf/`, '_blank');
     };
 
     // --- Lógica de cálculo de totales ---

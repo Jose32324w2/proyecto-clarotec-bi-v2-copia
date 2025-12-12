@@ -33,7 +33,7 @@ const ProfilePage = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/users/me/', {
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/me/`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 const data = response.data;
@@ -89,7 +89,7 @@ const ProfilePage = () => {
                 payload.empresa = formData.empresa;
             }
 
-            await axios.patch('http://localhost:8000/api/users/me/', payload, {
+            await axios.patch(`${process.env.REACT_APP_API_URL}/users/me/`, payload, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -121,7 +121,7 @@ const ProfilePage = () => {
         }
 
         try {
-            await axios.patch('http://localhost:8000/api/users/me/password/', {
+            await axios.patch(`${process.env.REACT_APP_API_URL}/users/me/password/`, {
                 current_password: passData.current_password,
                 new_password: passData.new_password
             }, {

@@ -112,8 +112,8 @@ const PagosPanelPage = () => {
         try {
             const token = localStorage.getItem('accessToken');
             const endpoint = activeTab === 'pendientes'
-                ? 'http://127.0.0.1:8000/api/pedidos/aceptados/'
-                : 'http://127.0.0.1:8000/api/pedidos/historial-pagos/';
+                ? `${process.env.REACT_APP_API_URL}/pedidos/aceptados/`
+                : `${process.env.REACT_APP_API_URL}/pedidos/historial-pagos/`;
 
             const response = await axios.get(endpoint, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -137,7 +137,7 @@ const PagosPanelPage = () => {
 
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.post(`http://127.0.0.1:8000/api/pedidos/${pedidoId}/confirmar-pago/`, {}, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/confirmar-pago/`, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -170,7 +170,7 @@ const PagosPanelPage = () => {
 
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.post(`http://127.0.0.1:8000/api/pedidos/${pedidoId}/rechazar-pago/`, {}, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/rechazar-pago/`, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 

@@ -45,7 +45,7 @@ const RegisterPage = () => {
 
         try {
             // 1. Registrar usuario
-            await axios.post('http://localhost:8000/api/register/', {
+            await axios.post(`${process.env.REACT_APP_API_URL}/register/`, {
                 first_name: formData.first_name,
                 last_name: formData.last_name,
                 email: formData.email,

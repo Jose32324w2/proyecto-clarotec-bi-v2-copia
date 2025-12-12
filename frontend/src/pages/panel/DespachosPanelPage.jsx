@@ -134,8 +134,8 @@ const DespachosPanelPage = () => {
         try {
             const token = localStorage.getItem('accessToken');
             const endpoint = activeTab === 'por_despachar'
-                ? 'http://127.0.0.1:8000/api/pedidos/para-despachar/'
-                : 'http://127.0.0.1:8000/api/pedidos/historial-despachos/';
+                ? `${process.env.REACT_APP_API_URL}/pedidos/para-despachar/`
+                : `${process.env.REACT_APP_API_URL}/pedidos/historial-despachos/`;
 
             const response = await axios.get(endpoint, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -229,7 +229,7 @@ const DespachosPanelPage = () => {
     const handleMarcarDespachado = async (pedidoId, { transportista, numeroGuia }) => {
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.post(`http://127.0.0.1:8000/api/pedidos/${pedidoId}/marcar-despachado/`,
+            await axios.post(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/marcar-despachado/`,
                 { transportista, numero_guia: numeroGuia },
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );

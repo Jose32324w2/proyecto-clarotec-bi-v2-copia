@@ -43,7 +43,7 @@ const CotizacionDetailPage = () => {
         const fetchPedido = async () => {
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await axios.get(`http://127.0.0.1:8000/api/pedidos/${pedidoId}/`, {
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 setPedido(response.data);
@@ -138,7 +138,7 @@ const CotizacionDetailPage = () => {
         setCalculatingShipment(true);
         try {
             // Ahora solo enviamos la comuna, el backend calcula para todos
-            const response = await axios.post('http://127.0.0.1:8000/api/cotizacion/calcular-envio/', {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/cotizacion/calcular-envio/`, {
                 comuna
             });
 
@@ -182,7 +182,7 @@ const CotizacionDetailPage = () => {
                 opciones_envio: shippingOptions
             };
 
-            const response = await axios.put(`http://127.0.0.1:8000/api/pedidos/${pedidoId}/`, payload, {
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/`, payload, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -208,7 +208,7 @@ const CotizacionDetailPage = () => {
         setError('');
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.post(`http://127.0.0.1:8000/api/pedidos/${pedidoId}/enviar-cotizacion/`, {}, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/enviar-cotizacion/`, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             alert('¡Correo de cotización enviado con éxito!');
@@ -222,7 +222,7 @@ const CotizacionDetailPage = () => {
 
     const handleGeneratePDF = () => {
         // Ahora descarga el archivo
-        window.open(`http://127.0.0.1:8000/api/pedidos/${pedidoId}/pdf/`, '_blank');
+        window.open(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/pdf/`, '_blank');
     };
 
     const subtotalItems = pedido ? pedido.items.reduce((acc, item) => acc + (parseFloat(item.cantidad) * parseFloat(item.precio_unitario || 0)), 0) : 0;

@@ -44,13 +44,13 @@ const errorStyles = { ...messageContainerStyles, borderColor: '#f5c6cb', backgro
 
 // --- NUEVO ESTILO PARA EL BOTÓN DE VOLVER ---
 const homeLinkStyles = {
-    display: 'inline-block',
-    marginTop: '1.5rem',
-    padding: '0.75rem 1.5rem',
-    color: '#007bff',
-    textDecoration: 'none',
-    border: '1px solid #007bff',
-    borderRadius: '5px',
+  display: 'inline-block',
+  marginTop: '1.5rem',
+  padding: '0.75rem 1.5rem',
+  color: '#007bff',
+  textDecoration: 'none',
+  border: '1px solid #007bff',
+  borderRadius: '5px',
 };
 
 
@@ -85,21 +85,21 @@ const SolicitudForm = () => {
         descripcion_item: formData.descripcion,
       };
 
-      await axios.post('http://127.0.0.1:8000/api/solicitudes/', apiPayload);
+      await axios.post(`${process.env.REACT_APP_API_URL}/solicitudes/`, apiPayload);
 
-      setFormState({ 
-        loading: false, 
-        message: '¡Gracias! Hemos recibido tu solicitud. Nos pondremos en contacto contigo a la brevedad.', 
-        error: false 
+      setFormState({
+        loading: false,
+        message: '¡Gracias! Hemos recibido tu solicitud. Nos pondremos en contacto contigo a la brevedad.',
+        error: false
       });
       setFormData({ nombre: '', empresa: '', email: '', descripcion: '' });
 
     } catch (error) {
       console.error("Error al enviar la solicitud:", error);
-      setFormState({ 
-        loading: false, 
-        message: 'Hubo un error al enviar tu solicitud. Por favor, inténtalo más tarde.', 
-        error: true 
+      setFormState({
+        loading: false,
+        message: 'Hubo un error al enviar tu solicitud. Por favor, inténtalo más tarde.',
+        error: true
       });
     }
   };
@@ -107,12 +107,12 @@ const SolicitudForm = () => {
   // --- 2. MODIFICAMOS EL BLOQUE DE ÉXITO ---
   if (formState.message && !formState.error) {
     return (
-        <div style={successStyles}>
-            <p>{formState.message}</p>
-            <Link to="/" style={homeLinkStyles}>
-                Volver al Inicio
-            </Link>
-        </div>
+      <div style={successStyles}>
+        <p>{formState.message}</p>
+        <Link to="/" style={homeLinkStyles}>
+          Volver al Inicio
+        </Link>
+      </div>
     );
   }
 
@@ -138,7 +138,7 @@ const SolicitudForm = () => {
         <label htmlFor="descripcion">¿Qué necesitas?</label>
         <textarea id="descripcion" name="descripcion" rows="5" value={formData.descripcion} onChange={handleChange} required style={inputStyles}></textarea>
       </div>
-      
+
       {formState.message && formState.error && (
         <div style={errorStyles}>{formState.message}</div>
       )}

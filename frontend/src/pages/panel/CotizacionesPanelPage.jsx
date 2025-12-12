@@ -33,10 +33,10 @@ const CotizacionesPanelPage = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('accessToken');
-            let url = 'http://127.0.0.1:8000/api/pedidos/cotizados/';
+            let url = `${process.env.REACT_APP_API_URL}/pedidos/cotizados/`;
 
             if (activeTab === 'historial') {
-                url = 'http://127.0.0.1:8000/api/pedidos/historial-cotizaciones/';
+                url = `${process.env.REACT_APP_API_URL}/pedidos/historial-cotizaciones/`;
             }
 
             const response = await axios.get(url, {
@@ -116,7 +116,7 @@ const CotizacionesPanelPage = () => {
 
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.post(`http://127.0.0.1:8000/api/pedidos/${id}/rechazar/`, {}, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/pedidos/${id}/rechazar/`, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -318,7 +318,7 @@ const CotizacionesPanelPage = () => {
                                                         <i className="bi bi-eye me-1"></i> Ver
                                                     </Link>
                                                     <a
-                                                        href={`http://127.0.0.1:8000/api/pedidos/${cotizacion.id}/pdf/`}
+                                                        href={`${process.env.REACT_APP_API_URL}/pedidos/${cotizacion.id}/pdf/`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="btn btn-sm btn-outline-danger"
