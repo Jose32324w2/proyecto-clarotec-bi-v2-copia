@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import PaginationControl from '../../components/common/PaginationControl';
+import config from '../../config';
 
 const CotizacionesPanelPage = () => {
     const [cotizaciones, setCotizaciones] = useState([]);
@@ -33,10 +34,10 @@ const CotizacionesPanelPage = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('accessToken');
-            let url = `${process.env.REACT_APP_API_URL}/pedidos/cotizados/`;
+            let url = `${config.API_URL}/pedidos/cotizados/`;
 
             if (activeTab === 'historial') {
-                url = `${process.env.REACT_APP_API_URL}/pedidos/historial-cotizaciones/`;
+                url = `${config.API_URL}/pedidos/historial-cotizaciones/`;
             }
 
             const response = await axios.get(url, {
@@ -116,7 +117,7 @@ const CotizacionesPanelPage = () => {
 
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.post(`${process.env.REACT_APP_API_URL}/pedidos/${id}/rechazar/`, {}, {
+            await axios.post(`${config.API_URL}/pedidos/${id}/rechazar/`, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -318,7 +319,7 @@ const CotizacionesPanelPage = () => {
                                                         <i className="bi bi-eye me-1"></i> Ver
                                                     </Link>
                                                     <a
-                                                        href={`${process.env.REACT_APP_API_URL}/pedidos/${cotizacion.id}/pdf/`}
+                                                        href={`${config.API_URL}/pedidos/${cotizacion.id}/pdf/`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="btn btn-sm btn-outline-danger"

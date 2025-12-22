@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom'; // <-- 1. IMPORTAMOS Link
+import config from '../../config';
 
 // (Los estilos del formulario se mantienen igual)
 const formStyles = {
@@ -85,7 +86,7 @@ const SolicitudForm = () => {
         descripcion_item: formData.descripcion,
       };
 
-      await axios.post(`${process.env.REACT_APP_API_URL}/solicitudes/`, apiPayload);
+      await axios.post(`${config.API_URL}/solicitudes/`, apiPayload);
 
       setFormState({
         loading: false,

@@ -4,18 +4,19 @@ Módulo de Pruebas: Estructura de APIs BI (Business Intelligence).
 Verifica la estructura de datos retornada por los endpoints de KPI, asegurando
 que el frontend reciba las métricas clave esperadas.
 """
-import pytest
-from rest_framework.test import APIClient
-from rest_framework import status
-from django.urls import reverse
-from gestion.models import Pedido
-from usuarios.models import User, Roles
+import pytest # Importa el framework de pruebas
+from rest_framework.test import APIClient # Importa el cliente de pruebas de Django Rest Framework
+from rest_framework import status # Importa los códigos de estado HTTP
+from django.urls import reverse # Importa la función para resolver URLs
+from gestion.models import Pedido # Importa el modelo de Pedido
+from usuarios.models import User, Roles # Importa los modelos de User y Roles
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db # Marca la clase para que se ejecute con la base de datos de pruebas
 class TestBI:
+    # Método de inicialización de datos de prueba
     def setup_method(self):
-        # Inicia el cliente de pruebas API.
+        # Inicia el cliente de pruebas API. 
         self.client = APIClient()
 
         # Asegura que exista el rol 'Gerencia'.
@@ -27,6 +28,7 @@ class TestBI:
         # Autentica la sesión de pruebas con este usuario.
         self.client.force_authenticate(user=self.user)
 
+    # Prueba la estructura de la respuesta del endpoint de KPIs
     def test_kpi_metrics_structure(self):
         """
         Valida el esquema de respuesta del endpoint de KPIs.
@@ -55,6 +57,7 @@ class TestBI:
         # Verifica que el campo 'total_utilidad' exista.
         assert 'total_utilidad' in data
 
+    # Prueba comportamiento ante BD vacía
     def test_kpi_empty_db(self):
         """
         Prueba comportamiento ante BD vacía.
@@ -63,6 +66,7 @@ class TestBI:
         # Esto simula un sistema recién instalado.
         Pedido.objects.all().delete()
 
+        # Obtiene la URL para Métricas KPI.
         url = reverse('bi-kpis')
 
         # Intenta obtener KPIs sin datos.

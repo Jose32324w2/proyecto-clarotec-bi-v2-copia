@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth'; // <-- 1. Importamos el hook
+import { useAuth } from '../../hooks/useAuth'; // <-- 1. Importamos el hook useAuth
 
 const ProtectedRoute = () => {
     // 2. Obtenemos el token directamente de nuestro contexto, no de localStorage

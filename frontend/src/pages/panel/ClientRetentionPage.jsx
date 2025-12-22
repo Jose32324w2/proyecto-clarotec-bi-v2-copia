@@ -16,6 +16,7 @@ import { Container, Row, Col, Card, Table, Badge, Spinner, Alert, Button, Form, 
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
 import { REGIONES_Y_COMUNAS } from '../../data/locations';
+import config from '../../config';
 
 const ClientRetentionPage = () => {
     const { token } = useAuth();
@@ -65,7 +66,7 @@ const ClientRetentionPage = () => {
             if (startDate) params.append('start_date', startDate);
             if (endDate) params.append('end_date', endDate);
 
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/bi/retention/?${params.toString()}`, {
+            const response = await axios.get(`${config.API_URL}/bi/retention/?${params.toString()}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setData(response.data);
@@ -97,7 +98,7 @@ const ClientRetentionPage = () => {
 
         setSendingEmailId(clientId);
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/bi/retention/email/${clientId}/`, {}, {
+            await axios.post(`${config.API_URL}/bi/retention/email/${clientId}/`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setToastMessage(`Correo enviado exitosamente a ${clientEmail}`);
@@ -116,7 +117,7 @@ const ClientRetentionPage = () => {
 
     const handleStatusChange = async (clientId, newStatus) => {
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/bi/retention/status/${clientId}/`, { status: newStatus }, {
+            await axios.post(`${config.API_URL}/bi/retention/status/${clientId}/`, { status: newStatus }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setToastMessage("Estado actualizado correctamente.");

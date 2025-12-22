@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 
+// CartSummary es un componente que muestra la lista de productos agregados al carrito
 const CartSummary = () => {
     const { cart, removeItem, updateItem, totalItems } = useCart();
     const [editingItem, setEditingItem] = useState(null);
     const [editForm, setEditForm] = useState({ name: '', details: '', qty: 1 });
 
+    // handleEditClick es una función que se encarga de editar un item del carrito
     const handleEditClick = (item) => {
         setEditingItem(item);
         setEditForm({ name: item.name, details: item.details, qty: item.qty });
     };
 
+    // handleSaveEdit es una función que se encarga de guardar los cambios de un item editado
     const handleSaveEdit = () => {
         if (editingItem) {
             updateItem(editingItem.id, {
@@ -22,7 +25,7 @@ const CartSummary = () => {
         }
     };
 
-    return (
+    return ( // renderiza el carrito de compras
         <>
             <div className="card shadow-sm border-0" style={{ backgroundColor: '#f8f9fa' }}>
                 <div className="card-header bg-dark text-white py-3">

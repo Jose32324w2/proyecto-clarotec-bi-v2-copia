@@ -13,61 +13,68 @@ VISTAS PRINCIPALES:
     - BIDashboardDataView: Métricas agregadas para el dashboard de BI.
     - ClientRetentionView: Lógica de retención de clientes (Churn).
 """
-from rest_framework import generics, permissions, status, viewsets
-from decimal import Decimal
-from datetime import datetime
-from django.db.models import Count, Sum, F, Q, Value, CharField
-from django.db.models.functions import Concat, ExtractYear, ExtractMonth, LPad, Cast
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import Pedido, ProductoFrecuente, Cliente, ItemsPedido
-from .serializers import (
-    SolicitudCreacionSerializer,
-    PedidoSerializer,
-    PedidoDetailUpdateSerializer,
-    PedidoDetailSerializer,
-    ProductoFrecuenteSerializer,
-    ClienteSerializer
+from rest_framework import generics, permissions, status, viewsets # Importa las dependencias
+from decimal import Decimal # Importa Decimal
+from datetime import datetime # Importa datetime
+from django.db.models import Count, Sum, F, Q, Value, CharField # Importa Count, Sum, F, Q, Value, CharField
+from django.db.models.functions import Concat, ExtractYear, ExtractMonth, LPad, Cast # Importa Concat, ExtractYear, ExtractMonth, LPad, Cast
+from rest_framework.response import Response # Importa Response
+from rest_framework.views import APIView # Importa APIView
+from .models import Pedido, ProductoFrecuente, Cliente, ItemsPedido # Importa los modelos
+from .serializers import ( # Importa los serializers
+    SolicitudCreacionSerializer, # Importa SolicitudCreacionSerializer
+    PedidoSerializer, # Importa PedidoSerializer
+    PedidoDetailUpdateSerializer, # Importa PedidoDetailUpdateSerializer
+    PedidoDetailSerializer, # Importa PedidoDetailSerializer
+    ProductoFrecuenteSerializer, # Importa ProductoFrecuenteSerializer
+    ClienteSerializer # Importa ClienteSerializer
 )
-from .permissions import (
-    IsVendedorOrGerencia,
-    IsAdministrativaOrGerencia,
-    IsDespachadorOrGerencia,
-    IsGerencia,
-    IsStaffMember
+from .permissions import ( # Importa los permisos
+    IsVendedorOrGerencia, # Importa IsVendedorOrGerencia
+    IsAdministrativaOrGerencia, # Importa IsAdministrativaOrGerencia
+    IsDespachadorOrGerencia, # Importa IsDespachadorOrGerencia
+    IsGerencia, # Importa IsGerencia
+    IsStaffMember # Importa IsStaffMember
 )
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from django.conf import settings
-from django.utils import timezone
-from .services import ShippingCalculator
-from django.http import HttpResponse
-from xhtml2pdf import pisa
-from io import BytesIO
+from django.core.mail import send_mail # Importa send_mail
+from django.template.loader import render_to_string # Importa render_to_string
+from django.utils.html import strip_tags # Importa strip_tags
+from django.conf import settings # Importa settings 
+from django.utils import timezone # Importa timezone
+from .services import ShippingCalculator # Importa ShippingCalculator
+from django.http import HttpResponse # Importa HttpResponse
+from xhtml2pdf import pisa # Importa pisa
+from io import BytesIO # Importa BytesIO
 
-
-class SolicitudCreateAPIView(generics.CreateAPIView):
-    queryset = Pedido.objects.all()
-    serializer_class = SolicitudCreacionSerializer
-    permission_classes = [permissions.AllowAny]
+# Clase SolicitudCreateAPIView
+class SolicitudCreateAPIView(generics.CreateAPIView): 
+    # queryset es el conjunto de objetos que se van a mostrar
+    queryset = Pedido.objects.all() 
+    # serializer_class es el serializador que se va a usar
+    serializer_class = SolicitudCreacionSerializer 
+    # permission_classes es el conjunto de permisos que se van a aplicar
+    permission_classes = [permissions.AllowAny] 
 
     def create(self, request, *args, **kwargs):
         input_serializer = self.get_serializer(data=request.data)
         if not input_serializer.is_valid():
             return Response(input_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # orm
         pedido_creado = input_serializer.save()
         output_serializer = PedidoSerializer(pedido_creado, context={'request': request})
         headers = self.get_success_headers(output_serializer.data)
         return Response(output_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
+# Clase ProductoFrecuenteListAPIView
 class ProductoFrecuenteListAPIView(generics.ListAPIView):
+    # queryset es el conjunto de objetos que se van a mostrar
     queryset = ProductoFrecuente.objects.filter(activo=True)
     serializer_class = ProductoFrecuenteSerializer
     permission_classes = [permissions.AllowAny]
 
 
+# Clase SolicitudesListAPIView
 class SolicitudesListAPIView(generics.ListAPIView):
     serializer_class = PedidoSerializer
     permission_classes = [IsVendedorOrGerencia]
@@ -76,6 +83,7 @@ class SolicitudesListAPIView(generics.ListAPIView):
         return Pedido.objects.filter(estado='solicitud').order_by('-fecha_solicitud')
 
 
+# Clase PedidoDetailAPIView
 class PedidoDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Pedido.objects.all()
     serializer_class = PedidoDetailUpdateSerializer
@@ -99,6 +107,7 @@ class PedidoDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             instance.save()
 
 
+# Clase PortalPedidoDetailAPIView
 class PortalPedidoDetailAPIView(generics.RetrieveAPIView):
     queryset = Pedido.objects.all()
     serializer_class = PedidoDetailSerializer
@@ -120,6 +129,7 @@ class PortalPedidoDetailAPIView(generics.RetrieveAPIView):
         return Response(serializer.data)
 
 
+# Clase PedidoAccionAPIView
 class PedidoAccionAPIView(APIView):
 
     """
@@ -171,6 +181,7 @@ class PedidoAccionAPIView(APIView):
             return Response({'error': 'Pedido no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
 
+# Clase EnviarCotizacionAPIView
 class EnviarCotizacionAPIView(APIView):
 
     """
@@ -191,7 +202,7 @@ class EnviarCotizacionAPIView(APIView):
 
             id_seguimiento_con_guiones = str(pedido.id_seguimiento)
 
-            dominio_frontend = "http://localhost:3000"
+            dominio_frontend = settings.FRONTEND_URL
 
             enlace_portal = f"{dominio_frontend}/portal/pedidos/{id_seguimiento_con_guiones}"
 
@@ -229,7 +240,7 @@ class EnviarCotizacionAPIView(APIView):
 
             return Response({'error': 'Pedido no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
-
+# Clase ConfirmarRecepcionView 
 class ConfirmarRecepcionView(APIView):
 
     """
@@ -560,7 +571,17 @@ class ConfirmarPagoView(APIView):
 
                 asunto = f"Pago Confirmado - Pedido #{pedido.id} - Clarotec"
 
-                html_message = render_to_string('email/pago_confirmado.html', {'pedido': pedido})
+                id_seguimiento = str(pedido.id_seguimiento)
+                enlace_portal = f"{settings.FRONTEND_URL}/portal/pedidos/{id_seguimiento}"
+                
+                contexto = {
+                    'nombre_cliente': pedido.cliente.nombre,
+                    'pedido_id': pedido.id,
+                    'enlace_portal': enlace_portal,
+                    'pedido': pedido
+                }
+
+                html_message = render_to_string('email/pago_confirmado.html', contexto)
 
                 plain_message = strip_tags(html_message)
 
@@ -674,7 +695,7 @@ class MarcarComoDespachadoView(APIView):
 
                 id_seguimiento_con_guiones = str(pedido.id_seguimiento)
 
-                dominio_frontend = "http://localhost:3000"
+                dominio_frontend = settings.FRONTEND_URL
 
                 enlace_portal = f"{dominio_frontend}/portal/pedidos/{id_seguimiento_con_guiones}"
 

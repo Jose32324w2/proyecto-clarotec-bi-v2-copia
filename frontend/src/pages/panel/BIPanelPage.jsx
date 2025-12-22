@@ -12,6 +12,7 @@ import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Responsive
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
 import { REGIONES_Y_COMUNAS } from '../../data/locations';
+import config from '../../config';
 
 
 const BIPanelPage = () => {
@@ -49,7 +50,7 @@ const BIPanelPage = () => {
     useEffect(() => {
         const fetchClientes = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/clientes-crud/`, {
+                const response = await axios.get(`${config.API_URL}/clientes-crud/`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setClientes(response.data);
@@ -89,7 +90,7 @@ const BIPanelPage = () => {
                 selectedRegions.forEach(r => params.append('region[]', r));
                 selectedComunas.forEach(c => params.append('comuna[]', c));
 
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/bi/filter-options/?${params.toString()}`, {
+                const response = await axios.get(`${config.API_URL}/bi/filter-options/?${params.toString()}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setAvailableOptions(response.data);
@@ -137,19 +138,19 @@ const BIPanelPage = () => {
                 const queryString = params.toString();
 
                 // Fetch Scatter Plot Data
-                const responseScatter = await axios.get(`${process.env.REACT_APP_API_URL}/bi/rentabilidad/?${queryString}`, {
+                const responseScatter = await axios.get(`${config.API_URL}/bi/rentabilidad/?${queryString}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setData(responseScatter.data);
 
                 // Fetch KPI Data
-                const responseKPI = await axios.get(`${process.env.REACT_APP_API_URL}/bi/kpis/?${queryString}`, {
+                const responseKPI = await axios.get(`${config.API_URL}/bi/kpis/?${queryString}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setKpiData(responseKPI.data);
 
                 // Fetch Advanced Dashboard Stats
-                const responseStats = await axios.get(`${process.env.REACT_APP_API_URL}/bi/dashboard-stats/?${queryString}`, {
+                const responseStats = await axios.get(`${config.API_URL}/bi/dashboard-stats/?${queryString}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setDashboardStats(responseStats.data);

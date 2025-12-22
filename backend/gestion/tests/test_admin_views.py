@@ -4,15 +4,15 @@ Módulo de Pruebas: Vistas del Panel Administrativo.
 Este módulo asegura que las vistas de listado y herramientas operativas
 del panel de administración respondan correctamente y carguen los datos esperados.
 """
-import pytest
-from rest_framework.test import APIClient
-from rest_framework import status
-from django.urls import reverse
-from gestion.models import Pedido, Cliente
-from usuarios.models import User, Roles
+import pytest  # Importa el framework de pruebas
+from rest_framework.test import APIClient  # Importa el cliente de pruebas de Django Rest Framework
+from rest_framework import status  # Importa los códigos de estado HTTP
+from django.urls import reverse  # Importa la función para resolver URLs
+from gestion.models import Pedido, Cliente  # Importa los modelos de Pedido y Cliente
+from usuarios.models import User, Roles  # Importa los modelos de User y Roles
 
-
-@pytest.mark.django_db
+# Clase de pruebas para las vistas del panel administrativo
+@pytest.mark.django_db  # Marca la clase para que se ejecute con la base de datos de pruebas
 class TestAdminViews:
     def setup_method(self):
         """

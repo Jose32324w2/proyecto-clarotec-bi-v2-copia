@@ -5,56 +5,59 @@ PROPOSITO:
     Mapea las URLs específicas de esta aplicación a sus Vistas correspondientes.
     Define la API pública y privada de la aplicación.
 """
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import (
-    SolicitudCreateAPIView,
-    SolicitudesListAPIView,
-    PedidoDetailAPIView,
-    PortalPedidoDetailAPIView,
-    PedidoAccionAPIView,
-    EnviarCotizacionAPIView,
-    PedidosAceptadosListView,
-    PedidosHistorialPagosListView,
-    ConfirmarPagoView,
-    PedidosCotizadosListView,
-    PedidosParaDespacharListView,
-    PedidosHistorialDespachosListView,
-    MarcarComoDespachadoView,
-    ConfirmarRecepcionView,
-    ProductoFrecuenteListAPIView,
-    ProductoFrecuenteViewSet,
-    ClienteViewSet,
-    CalcularEnvioAPIView,
-    GenerarPDFAPIView,
-    SeleccionarEnvioAPIView,
-    PedidosHistorialCotizacionesListView,
-    SincronizarProductosAPIView,
-    RentabilidadHistoricaAPIView,
-    MetricasKPIView,
-    InfoLogisticaAPIView,
-    BIDashboardDataView,
-    ClientRetentionView,
-    SendRetentionEmailView,
-    UpdateClientStatusView,
-    RechazarPagoView,
-    ClientHistoryAPIView,
-    BIFilterOptionsView,
-    RechazarPedidoView
+from django.urls import path, include # Importa path y include
+from rest_framework.routers import DefaultRouter # Importa DefaultRouter
+from .views import ( # Importa las vistas
+    SolicitudCreateAPIView, # Importa SolicitudCreateAPIView
+    SolicitudesListAPIView, # Importa SolicitudesListAPIView
+    PedidoDetailAPIView, # Importa PedidoDetailAPIView
+    PortalPedidoDetailAPIView, # Importa PortalPedidoDetailAPIView
+    PedidoAccionAPIView, # Importa PedidoAccionAPIView
+    EnviarCotizacionAPIView, # Importa EnviarCotizacionAPIView
+    PedidosAceptadosListView, # Importa PedidosAceptadosListView
+    PedidosHistorialPagosListView, # Importa PedidosHistorialPagosListView
+    ConfirmarPagoView, # Importa ConfirmarPagoView
+    PedidosCotizadosListView, # Importa PedidosCotizadosListView
+    PedidosParaDespacharListView, # Importa PedidosParaDespacharListView
+    PedidosHistorialDespachosListView, # Importa PedidosHistorialDespachosListView
+    MarcarComoDespachadoView, # Importa MarcarComoDespachadoView
+    ConfirmarRecepcionView, # Importa ConfirmarRecepcionView
+    ProductoFrecuenteListAPIView, # Importa ProductoFrecuenteListAPIView
+    ProductoFrecuenteViewSet, # Importa ProductoFrecuenteViewSet
+    ClienteViewSet, # Importa ClienteViewSet
+    CalcularEnvioAPIView, # Importa CalcularEnvioAPIView
+    GenerarPDFAPIView, # Importa GenerarPDFAPIView
+    SeleccionarEnvioAPIView, # Importa SeleccionarEnvioAPIView
+    PedidosHistorialCotizacionesListView, # Importa PedidosHistorialCotizacionesListView
+    SincronizarProductosAPIView, # Importa SincronizarProductosAPIView
+    RentabilidadHistoricaAPIView, # Importa RentabilidadHistoricaAPIView
+    MetricasKPIView, # Importa MetricasKPIView
+    InfoLogisticaAPIView, # Importa InfoLogisticaAPIView
+    BIDashboardDataView, # Importa BIDashboardDataView
+    ClientRetentionView, # Importa ClientRetentionView
+    SendRetentionEmailView, # Importa SendRetentionEmailView
+    UpdateClientStatusView, # Importa UpdateClientStatusView
+    RechazarPagoView, # Importa RechazarPagoView
+    ClientHistoryAPIView, # Importa ClientHistoryAPIView
+    BIFilterOptionsView, # Importa BIFilterOptionsView
+    RechazarPedidoView # Importa RechazarPedidoView
 )
 
+# Crea un router para los endpoints CRUD
+router = DefaultRouter() 
+# Registra los endpoints CRUD para los productos frecuentes
+router.register(r'productos-crud', ProductoFrecuenteViewSet, basename='producto-crud')    
+# Registra los endpoints CRUD para los clientes
+router.register(r'clientes-crud', ClienteViewSet, basename='cliente-crud') 
 
-router = DefaultRouter()
-router.register(r'productos-crud', ProductoFrecuenteViewSet, basename='producto-crud')
-router.register(r'clientes-crud', ClienteViewSet, basename='cliente-crud')
-
+# Define las URLs de la aplicación
 urlpatterns = [
     # Rutas del Router (CRUDs)
-    path('', include(router.urls)),
+    path('', include(router.urls)), # Incluye las rutas del router
 
     # Endpoints específicos existentes
     path('solicitudes/', SolicitudCreateAPIView.as_view(), name='solicitud-create'),
-    path('productos/frecuentes/', ProductoFrecuenteListAPIView.as_view(), name='producto-frecuente-list'),
+    path('productos/frecuentes/', ProductoFrecuenteListAPIView.as_view(), name='producto-frecuente-list'), 
 
     # Panel Vendedores / Admin
     path('pedidos/solicitudes/', SolicitudesListAPIView.as_view(), name='panel-solicitudes-list'),

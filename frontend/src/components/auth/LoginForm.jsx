@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth'; // <-- Importamos nuestro custom hook
+import { useAuth } from '../../hooks/useAuth'; // <-- Importamos nuestro custom hook useAuth
 
 
 // (Los estilos pueden mantenerse igual si lo deseas)
@@ -54,7 +54,7 @@ const LoginForm = () => {
         try {
             // 4. Llamamos a la función de login del contexto
             await login(email, password);
-            navigate('/dashboard'); // Redirige sin recargar la página
+            navigate('/inicio'); // Redirige a la página principal del dashboard
 
         } catch (err) {
             setError('Credenciales incorrectas o error en el servidor. Por favor, intente de nuevo.');

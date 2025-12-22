@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
+import config from '../config';
 
 const ClientHistoryPage = () => {
     const { token } = useAuth();
@@ -55,7 +56,7 @@ const ClientHistoryPage = () => {
         const fetchHistory = async () => {
             if (!token) return;
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/portal/mis-pedidos/`, {
+                const response = await axios.get(`${config.API_URL}/portal/mis-pedidos/`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setPedidos(response.data);

@@ -5,17 +5,18 @@ Este módulo valida la interacción del sistema con componentes externos a la ba
 incluyendo la generación de archivos (PDF), envío de correos electrónicos y
 la creación de solicitudes por usuarios no autenticados (público).
 """
-import pytest
-from rest_framework.test import APIClient
-from rest_framework import status
-from django.urls import reverse
-from django.core import mail
-from gestion.models import Cliente, Pedido, ItemsPedido
-from usuarios.models import User, Roles
+import pytest # Importa el framework de pruebas
+from rest_framework.test import APIClient # Importa el cliente de pruebas de Django Rest Framework
+from rest_framework import status # Importa los códigos de estado HTTP
+from django.urls import reverse # Importa la función para resolver URLs
+from django.core import mail # Importa el módulo de correo electrónico de Django
+from gestion.models import Cliente, Pedido, ItemsPedido # Importa los modelos de Cliente, Pedido y ItemsPedido
+from usuarios.models import User, Roles # Importa los modelos de User y Roles
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db # Marca la clase para que se ejecute con la base de datos de pruebas
 class TestIntegrations:
+    # Método de inicialización de datos de prueba
     def setup_method(self):
         """
         Configuración predeterminada para pruebas autenticadas.
@@ -29,6 +30,7 @@ class TestIntegrations:
         # Crea un usuario administrativo para ejecutar acciones protegidas.
         self.user = User.objects.create_user(email='admin@int.com', password='123', rol=role)
 
+    # Prueba la creación de solicitudes por usuarios anónimos
     def test_crear_solicitud_publica(self):
         """
         Verifica la creación de solicitudes por usuarios anónimos.
@@ -64,6 +66,7 @@ class TestIntegrations:
         # Consulta la base de datos para confirmar que existe un Pedido asociado al email dado.
         assert Pedido.objects.filter(cliente__email='public@test.com').exists()
 
+    # Prueba la generación correcta del documento PDF de cotización
     def test_generar_pdf_cotizacion(self):
         """
         Verifica la generación correcta del documento PDF de cotización.
@@ -93,6 +96,7 @@ class TestIntegrations:
         # Verifica que el cuerpo de la respuesta tenga bytes (no esté vacío).
         assert len(response.content) > 100
 
+    # Prueba el servicio de envío de correos electrónicos
     def test_enviar_email_cotizacion(self):
         """
         Verifica el servicio de envío de correos electrónicos.

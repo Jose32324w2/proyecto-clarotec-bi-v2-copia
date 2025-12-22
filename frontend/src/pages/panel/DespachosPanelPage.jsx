@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Modal, Button } from 'react-bootstrap';
 import PaginationControl from '../../components/common/PaginationControl';
+import config from '../../config';
 
 const COURIERS_LABELS = {
     'STARKEN': 'Starken',
@@ -134,8 +135,8 @@ const DespachosPanelPage = () => {
         try {
             const token = localStorage.getItem('accessToken');
             const endpoint = activeTab === 'por_despachar'
-                ? `${process.env.REACT_APP_API_URL}/pedidos/para-despachar/`
-                : `${process.env.REACT_APP_API_URL}/pedidos/historial-despachos/`;
+                ? `${config.API_URL}/pedidos/para-despachar/`
+                : `${config.API_URL}/pedidos/historial-despachos/`;
 
             const response = await axios.get(endpoint, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -229,7 +230,7 @@ const DespachosPanelPage = () => {
     const handleMarcarDespachado = async (pedidoId, { transportista, numeroGuia }) => {
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.post(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/marcar-despachado/`,
+            await axios.post(`${config.API_URL}/pedidos/${pedidoId}/marcar-despachado/`,
                 { transportista, numero_guia: numeroGuia },
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );

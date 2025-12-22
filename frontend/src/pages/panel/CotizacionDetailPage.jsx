@@ -7,6 +7,7 @@ import Notification from '../../components/Notification';
 import { REGIONES_Y_COMUNAS } from '../../data/locations';
 import { formatCLP } from '../../utils/formatters';
 import CurrencyInput from '../../components/common/CurrencyInput';
+import config from '../../config';
 
 // COURIERS ya no se usa para selección única, sino para mostrar opciones
 const COURIERS_LABELS = {
@@ -43,7 +44,7 @@ const CotizacionDetailPage = () => {
         const fetchPedido = async () => {
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/`, {
+                const response = await axios.get(`${config.API_URL}/pedidos/${pedidoId}/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 setPedido(response.data);
@@ -138,7 +139,7 @@ const CotizacionDetailPage = () => {
         setCalculatingShipment(true);
         try {
             // Ahora solo enviamos la comuna, el backend calcula para todos
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/cotizacion/calcular-envio/`, {
+            const response = await axios.post(`${config.API_URL}/cotizacion/calcular-envio/`, {
                 comuna
             });
 
@@ -165,6 +166,9 @@ const CotizacionDetailPage = () => {
         try {
             const token = localStorage.getItem('accessToken');
 
+            // Generar payload con datos del pedido
+            // el payload es un dict con los datos del pedido
+            // el dict es un objeto que contiene datos en formato clave-valor
             const payload = {
                 items: pedido.items.map(item => ({
                     id: item.id,
@@ -182,7 +186,7 @@ const CotizacionDetailPage = () => {
                 opciones_envio: shippingOptions
             };
 
-            const response = await axios.put(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/`, payload, {
+            const response = await axios.put(`${config.API_URL}/pedidos/${pedidoId}/`, payload, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -208,7 +212,7 @@ const CotizacionDetailPage = () => {
         setError('');
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.post(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/enviar-cotizacion/`, {}, {
+            await axios.post(`${config.API_URL}/pedidos/${pedidoId}/enviar-cotizacion/`, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             alert('¡Correo de cotización enviado con éxito!');
@@ -222,7 +226,7 @@ const CotizacionDetailPage = () => {
 
     const handleGeneratePDF = () => {
         // Ahora descarga el archivo
-        window.open(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/pdf/`, '_blank');
+        window.open(`${config.API_URL}/pedidos/${pedidoId}/pdf/`, '_blank');
     };
 
     const subtotalItems = pedido ? pedido.items.reduce((acc, item) => acc + (parseFloat(item.cantidad) * parseFloat(item.precio_unitario || 0)), 0) : 0;
@@ -284,7 +288,7 @@ const CotizacionDetailPage = () => {
                             <h5 className="mb-0">Datos del Cliente</h5>
                         </div>
                         <div className="card-body">
-                            <p className="mb-1"><strong>Nombre:</strong> {pedido.cliente.nombres} {pedido.cliente.apellidos}</p>
+                            <p className="mb-1"><strong>Nombre:</strong> {pedido.cliente.nombre} {pedido.cliente.apellido}</p>
                             <p className="mb-1"><strong>Empresa:</strong> {pedido.cliente.empresa || 'N/A'}</p>
                             <p className="mb-0"><strong>Email:</strong> {pedido.cliente.email}</p>
                         </div>

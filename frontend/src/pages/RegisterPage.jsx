@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import config from '../config';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
@@ -45,7 +46,7 @@ const RegisterPage = () => {
 
         try {
             // 1. Registrar usuario
-            await axios.post(`${process.env.REACT_APP_API_URL}/register/`, {
+            await axios.post(`${config.API_URL}/register/`, {
                 first_name: formData.first_name,
                 last_name: formData.last_name,
                 email: formData.email,

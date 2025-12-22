@@ -1,10 +1,13 @@
+
 import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 
+// CatalogCard es un componente que muestra un producto del catálogo
 const CatalogCard = ({ product }) => {
     const [qty, setQty] = useState(1);
     const { addItem } = useCart();
 
+    // handleAdd es una función que se encarga de agregar un producto al carrito
     const handleAdd = () => {
         addItem({
             id: Date.now(), // Unique ID for the cart item
@@ -18,7 +21,7 @@ const CatalogCard = ({ product }) => {
         setQty(1);
     };
 
-    return (
+    return ( // renderiza el producto del catálogo
         <div className="card h-100 shadow-sm">
             <div className="card-body">
                 <h6 className="card-subtitle mb-2 text-muted small text-uppercase">{product.categoria}</h6>

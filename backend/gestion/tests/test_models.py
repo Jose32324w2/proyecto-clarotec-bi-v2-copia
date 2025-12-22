@@ -4,12 +4,13 @@ Módulo de Pruebas Unitarias de Modelos.
 Verifica la integridad referencial, valores por defecto y lógica encapsulada
 en los modelos de la base de datos, asegurando la consistencia del esquema.
 """
-import pytest
-from gestion.models import Cliente
-from django.utils import timezone
+import pytest # Importa el framework de pruebas
+from gestion.models import Cliente # Importa el modelo Cliente
+from django.utils import timezone # Importa la función timezone de Django
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db # Marca la clase para que se ejecute con la base de datos de pruebas
+# Prueba la creación de un Cliente
 def test_cliente_creation():
     """
     Verifica la instanciación de un Cliente.
@@ -36,7 +37,8 @@ def test_cliente_creation():
     assert cliente.last_retention_email_sent_at is None
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db # Marca la clase para que se ejecute con la base de datos de pruebas
+# Prueba la actualización de estados de retención
 def test_cliente_retention_update():
     """
     Verifica la actualización de estados de retención.

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
+import config from '../../config';
 
 const ClientHistoryPage = () => {
     const { user } = useAuth();
@@ -14,7 +15,7 @@ const ClientHistoryPage = () => {
         const fetchHistory = async () => {
             try {
                 // El token se inyecta automáticamente por el interceptor
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/portal/historial/`);
+                const response = await axios.get(`${config.API_URL}/portal/historial/`);
                 setPedidos(response.data);
             } catch (err) {
                 console.error("Error fetching history:", err);

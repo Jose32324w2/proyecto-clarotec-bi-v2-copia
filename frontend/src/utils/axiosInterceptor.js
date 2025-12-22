@@ -17,10 +17,13 @@ axios.interceptors.response.use(
         // Si la respuesta es exitosa, simplemente la retornamos
         return response;
     },
+    // Si recibimos un error, lo manejamos aquí
+    //el uso de async es para que pueda usar await dentro de la funcion
     async (error) => {
         const originalRequest = error.config;
 
         // Si recibimos un 401, no hemos reintentado, Y NO ES EL LOGIN (evitar bucle)
+        // 401 es un error de autenticacion (token expirado)
         if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('/token/')) {
             originalRequest._retry = true;
 
@@ -29,6 +32,7 @@ axios.interceptors.response.use(
             // Intentar renovar el token
             const newToken = await authService.refreshAccessToken();
 
+            // Si se renovó el token, lo actualizamos en localStorage y reintentamos la petición
             if (newToken) {
                 console.log('Token renovado exitosamente');
                 // Actualizar el header de la petición original con el nuevo token

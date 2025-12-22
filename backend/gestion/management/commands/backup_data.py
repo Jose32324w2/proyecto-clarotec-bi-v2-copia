@@ -1,39 +1,37 @@
-import os
-import json
-from django.core.management.base import BaseCommand
-from django.core.management import call_command
-from django.conf import settings
+import os # Importa la clase os para manejar rutas de archivos
+import json # Importa la clase json para manejar archivos json
+from django.core.management.base import BaseCommand # Importa la clase BaseCommand para crear comandos
+from django.core.management import call_command # Importa la clase call_command para ejecutar comandos
+from django.conf import settings # Importa la clase settings para obtener configuraciones
 
 class Command(BaseCommand):
     help = 'Generates a full database backup safely handling encoding (UTF-8)'
 
+# Método principal que se ejecuta cuando se llama al comando
     def handle(self, *args, **options):
-        # Define output path
-        output_file = os.path.join(settings.BASE_DIR, 'gestion', 'data', 'backup_final_aws.json')
         
-        # Ensure directory exists
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        # Define output path
+        # settings.BASE_DIR es la ruta base del proyecto (donde está el archivo manage.py)
+        output_file = os.path.join(settings.BASE_DIR, 'gestion', 'data', 'backup_final_aws.json') # Define la ruta del archivo de salida
+        
+        # Asegura que el directorio existe
+        os.makedirs(os.path.dirname(output_file), exist_ok=True) # Asegura que el directorio existe
 
-        self.stdout.write(f"⏳ Starting backup to: {output_file}")
+        self.stdout.write(f"⏳ Starting backup to: {output_file}") # Muestra un mensaje de inicio
 
         try:
-            # Open file with explicit UTF-8 encoding
+            # Abre el archivo con codificación UTF-8
             with open(output_file, 'w', encoding='utf-8') as f:
-                # Call dumpdata directly to stdout, but we intercept it? 
-                # Actually, call_command returns the output as string if stdout is not provided? 
-                # No, call_command writes to stdout. 
-                # Better approach: Use call_command with stdout argument pointing to our file object?
-                # call_command('dumpdata', ..., stdout=f) works in Django.
-                
+                # Llama al comando dumpdata para hacer el backup
                 call_command(
-                    'dumpdata',
-                    exclude=['auth.permission', 'contenttypes', 'sessions.session', 'admin.logentry'],
-                    indent=2,
-                    stdout=f
+                    'dumpdata', # Comando para hacer el backup
+                    exclude=['auth.permission', 'contenttypes', 'sessions.session', 'admin.logentry'], # Excluye ciertos modelos
+                    indent=2, # Indentación del archivo
+                    stdout=f # Salida del comando
                 )
             
-            self.stdout.write(self.style.SUCCESS(f"✅ Backup successfully created at: {output_file}"))
-            self.stdout.write(self.style.SUCCESS(f"file size: {os.path.getsize(output_file) / 1024:.2f} KB"))
+            self.stdout.write(self.style.SUCCESS(f"✅ Backup successfully created at: {output_file}")) # Muestra un mensaje de éxito
+            self.stdout.write(self.style.SUCCESS(f"file size: {os.path.getsize(output_file) / 1024:.2f} KB")) # Muestra el tamaño del archivo
 
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"❌ Backup failed: {str(e)}"))
+            self.stdout.write(self.style.ERROR(f"❌ Backup failed: {str(e)}")) # Muestra un mensaje de error

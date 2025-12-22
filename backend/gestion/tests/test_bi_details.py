@@ -4,19 +4,21 @@ Módulo de Pruebas BI: Filtros Avanzados y Agregaciones.
 Verifica la lógica compleja de filtrado y cálculo de rentabilidad,
 incluyendo filtros cruzados, multi-selección y segmentación de clientes.
 """
-import pytest
-from rest_framework.test import APIClient
-from rest_framework import status
-from django.urls import reverse
-from django.utils import timezone
-from decimal import Decimal
-from datetime import timedelta
-from gestion.models import Pedido, Cliente, ItemsPedido
-from usuarios.models import User, Roles
+# Importaciones de librerias
+import pytest # Importa el framework de pruebas
+from rest_framework.test import APIClient # Importa el cliente de pruebas de Django Rest Framework
+from rest_framework import status # Importa los códigos de estado HTTP
+from django.urls import reverse # Importa la función para resolver URLs
+from django.utils import timezone # Importa la utilidad de fecha y hora
+from decimal import Decimal # Importa el tipo Decimal para cálculos precisos
+from datetime import timedelta # Importa la utilidad de tiempo para manejar fechas
+from gestion.models import Pedido, Cliente, ItemsPedido # Importa los modelos de Pedido, Cliente y ItemsPedido
+from usuarios.models import User, Roles # Importa los modelos de User y Roles
 
-
-@pytest.mark.django_db
+# Clase de pruebas para los detalles del BI
+@pytest.mark.django_db # Marca la clase para que se ejecute con la base de datos de pruebas
 class TestBIDetails:
+    # Método de inicialización de datos de prueba
     def setup_method(self):
         """
         Inicialización de Datos de Prueba (Seed Data).

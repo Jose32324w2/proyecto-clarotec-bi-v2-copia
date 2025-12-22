@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 
+// LinkInput es un componente que permite agregar productos externos al carrito
 const LinkInput = () => {
     const [url, setUrl] = useState('');
     const [qty, setQty] = useState(1);
     const { addItem } = useCart();
 
+    // handleSubmit es una función que se encarga de agregar un producto externo al carrito
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!url) return;
@@ -23,7 +25,7 @@ const LinkInput = () => {
         setQty(1);
     };
 
-    return (
+    return ( // renderiza el formulario para agregar un producto externo al carrito
         <div className="card mb-4">
             <div className="card-header bg-white">
                 <h5 className="mb-0 text-primary">

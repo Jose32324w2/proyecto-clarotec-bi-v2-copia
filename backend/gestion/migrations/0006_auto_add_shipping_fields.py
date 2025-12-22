@@ -1,13 +1,14 @@
 # Generated manually to fix missing fields
 
-from django.db import migrations, models
+from django.db import migrations, models # Importamos el módulo de migraciones y modelos
 
-class Migration(migrations.Migration):
-
+class Migration(migrations.Migration): # Clase Migration que define la migración
+    # Dependencias de la migración
     dependencies = [
         ('gestion', '0005_cliente_telefono'),
     ]
 
+    # Operaciones de la migración
     operations = [
         migrations.AddField(
             model_name='pedido',

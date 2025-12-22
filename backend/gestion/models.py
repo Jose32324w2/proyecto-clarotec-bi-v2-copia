@@ -11,13 +11,13 @@ MODELOS CLAVE:
     - ItemsPedido: Detalle de líneas de producto dentro de un pedido.
     - ProductoFrecuente: Catálogo de productos para facilitar la carga.
 """
-import uuid
-from decimal import Decimal, ROUND_HALF_UP
-from django.db import models
-from django.conf import settings  # Para referenciar al User model personalizado
+import uuid # Importa el módulo uuid para generar IDs únicos
+from decimal import Decimal, ROUND_HALF_UP # Importa el módulo decimal para manejar números con precisión
+from django.db import models # Importa el módulo models de Django para definir modelos
+from django.conf import settings # Importa el módulo settings de Django para referenciar al User model personalizado
 
-
-class Cliente(models.Model):
+# Modelo Cliente
+class Cliente(models.Model): 
     """
     Almacena la información de contacto de un cliente.
     No es un usuario del sistema, sino una entidad externa que solicita cotizaciones.
@@ -33,6 +33,7 @@ class Cliente(models.Model):
     # Propiedad de Compatibilidad (Legacy) - READ ONLY
     # Permite que el código antiguo que llama a 'cliente.nombre' siga funcionando
     # devolviendo el nombre completo concatenado.
+    # IMPORTANTE: Esto NO es un campo de base de datos.
     @property
     def nombre_completo(self):
         """Devuelve el nombre completo concatenado."""
@@ -59,7 +60,7 @@ class Cliente(models.Model):
     def __str__(self):
         return f"{self.nombre_completo} ({self.empresa})"
 
-
+# Modelo ProductoFrecuente
 class ProductoFrecuente(models.Model):
     """
     Productos recurrentes para agilizar la cotización.
@@ -77,7 +78,7 @@ class ProductoFrecuente(models.Model):
     def __str__(self):
         return self.nombre
 
-
+# Modelo Pedido
 class Pedido(models.Model):
     """
     El modelo central que representa una solicitud, cotización y pedido.
@@ -95,6 +96,7 @@ class Pedido(models.Model):
     ]
 
     # Relaciones
+    # on_delete=models.PROTECT: Protege la integridad referencial, evitando borrar registros con relaciones
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='pedidos')
     vendedor_asignado = models.ForeignKey(
         settings.AUTH_USER_MODEL,

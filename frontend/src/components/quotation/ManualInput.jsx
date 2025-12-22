@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 
+// ManualInput es un componente que permite agregar productos manualmente al carrito
 const ManualInput = () => {
     const [name, setName] = useState('');
     const [model, setModel] = useState('');
     const [qty, setQty] = useState(1);
     const { addItem } = useCart();
 
+    // handleSubmit es una función que se encarga de agregar un producto manualmente al carrito
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!name) return;
@@ -25,7 +27,7 @@ const ManualInput = () => {
         setQty(1);
     };
 
-    return (
+    return ( // renderiza el formulario para agregar un producto manualmente al carrito
         <div className="card mb-4">
             <div className="card-header bg-white">
                 <h5 className="mb-0 text-warning">

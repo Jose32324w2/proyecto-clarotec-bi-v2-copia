@@ -9,6 +9,7 @@
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
+// useAuth es un hook que permite acceder al contexto de autenticación desde cualquier componente
 export const useAuth = () => {
     return useContext(AuthContext);
 };

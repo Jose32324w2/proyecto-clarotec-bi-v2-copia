@@ -5,11 +5,13 @@
  * - Autenticar usuarios contra el Backend (JWT).
  * - Gestionar errores de login y redirección post-login.
  */
-import React from 'react';
-import { Link } from 'react-router-dom';
-import LoginForm from '../components/auth/LoginForm';
 
-const LoginPage = () => {
+// Importaciones de React y librerías externas 
+import React from 'react'; // React
+import { Link } from 'react-router-dom'; // Enrutamiento
+import LoginForm from '../components/auth/LoginForm'; // Formulario de login
+
+const LoginPage = () => { // Componente de Login
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
       <div className="card shadow-lg border-0" style={{ maxWidth: '400px', width: '100%' }}>

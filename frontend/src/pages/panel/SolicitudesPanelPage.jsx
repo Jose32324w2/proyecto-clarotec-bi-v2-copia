@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Modal, Button } from 'react-bootstrap';
 import PaginationControl from '../../components/common/PaginationControl';
+import config from '../../config';
 
 const SolicitudesPanelPage = () => {
     const [solicitudes, setSolicitudes] = useState([]);
@@ -47,7 +48,7 @@ const SolicitudesPanelPage = () => {
                 return;
             }
 
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/pedidos/solicitudes/`, {
+            const response = await axios.get(`${config.API_URL}/pedidos/solicitudes/`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -132,7 +133,7 @@ const SolicitudesPanelPage = () => {
 
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.post(`${process.env.REACT_APP_API_URL}/pedidos/${id}/rechazar/`, {}, {
+            await axios.post(`${config.API_URL}/pedidos/${id}/rechazar/`, {}, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

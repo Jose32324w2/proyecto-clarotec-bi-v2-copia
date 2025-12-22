@@ -9,7 +9,7 @@ SERVICIOS:
 """
 # backend/gestion/services.py
 
-
+# Clase ShippingCalculator (Calculadora de Envíos) 
 class ShippingCalculator:
     """
     Servicio para calcular costos de envío estimados basados en zonas geográficas.
@@ -50,7 +50,9 @@ class ShippingCalculator:
         'coyhaique': 'EXTREMO', 'punta arenas': 'EXTREMO'
     }
 
+    # Método para obtener la zona de una comuna
     @classmethod
+    # Obtiene la zona de una comuna
     def get_zona_from_comuna(cls, comuna_nombre):
         """ Normaliza el nombre de la comuna y busca su zona. Default: RM """
         if not comuna_nombre:
@@ -59,7 +61,9 @@ class ShippingCalculator:
         normalized = comuna_nombre.lower().strip()
         return cls.COMUNA_ZONA_MAP.get(normalized, 'RM')  # Default a RM si no encuentra
 
+    # Método para calcular el costo estimado
     @classmethod
+    # Calcula el costo estimado
     def calcular_costo(cls, comuna, courier):
         """
         Calcula el costo estimado.

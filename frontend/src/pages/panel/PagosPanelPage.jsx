@@ -3,9 +3,12 @@ import axios from 'axios';
 
 import { Modal, Button } from 'react-bootstrap';
 import PaginationControl from '../../components/common/PaginationControl';
+import config from '../../config';
 
 const PagosPanelPage = () => {
     const [pedidos, setPedidos] = useState([]);
+
+
     const [filteredPedidos, setFilteredPedidos] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [startDate, setStartDate] = useState('');
@@ -112,8 +115,8 @@ const PagosPanelPage = () => {
         try {
             const token = localStorage.getItem('accessToken');
             const endpoint = activeTab === 'pendientes'
-                ? `${process.env.REACT_APP_API_URL}/pedidos/aceptados/`
-                : `${process.env.REACT_APP_API_URL}/pedidos/historial-pagos/`;
+                ? `${config.API_URL}/pedidos/aceptados/`
+                : `${config.API_URL}/pedidos/historial-pagos/`;
 
             const response = await axios.get(endpoint, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -137,7 +140,7 @@ const PagosPanelPage = () => {
 
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.post(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/confirmar-pago/`, {}, {
+            await axios.post(`${config.API_URL}/pedidos/${pedidoId}/confirmar-pago/`, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -170,7 +173,7 @@ const PagosPanelPage = () => {
 
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.post(`${process.env.REACT_APP_API_URL}/pedidos/${pedidoId}/rechazar-pago/`, {}, {
+            await axios.post(`${config.API_URL}/pedidos/${pedidoId}/rechazar-pago/`, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 

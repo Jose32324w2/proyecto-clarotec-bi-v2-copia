@@ -4,15 +4,15 @@ Módulo de Pruebas de Integración: API de Retención.
 Valida la funcionalidad de los endpoints relacionados con la gestión de retención,
 incluyendo filtrado y recuperación de estructuras de datos.
 """
-import pytest
-from django.urls import reverse
-from rest_framework.test import APIClient
-from rest_framework import status
-from gestion.models import Cliente
-from usuarios.models import User, Roles
+import pytest # Importa el framework de pruebas
+from django.urls import reverse # Importa la función reverse para obtener URLs
+from rest_framework.test import APIClient # Importa el cliente de pruebas
+from rest_framework import status # Importa los códigos de estado HTTP
+from gestion.models import Cliente # Importa el modelo de Cliente
+from usuarios.models import User, Roles # Importa los modelos de User y Roles
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db # Marca la clase para que se ejecute con la base de datos de pruebas
 class TestClientRetentionView:
     def setup_method(self):
         """

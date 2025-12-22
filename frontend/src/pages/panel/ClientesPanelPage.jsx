@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import config from '../../config';
 
 const ClientesPanelPage = () => {
     const [clientes, setClientes] = useState([]);
@@ -65,7 +66,7 @@ const ClientesPanelPage = () => {
     const fetchClientes = async () => {
         try {
             const token = localStorage.getItem('accessToken');
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/clientes-crud/`, {
+            const response = await axios.get(`${config.API_URL}/clientes-crud/`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setClientes(response.data);
@@ -89,7 +90,7 @@ const ClientesPanelPage = () => {
         const token = localStorage.getItem('token');
         try {
             if (editingClient) {
-                await axios.put(`${process.env.REACT_APP_API_URL}/clientes-crud/${editingClient.id}/`, formData, {
+                await axios.put(`${config.API_URL}/clientes-crud/${editingClient.id}/`, formData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }

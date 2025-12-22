@@ -1,3 +1,4 @@
+# Import MySQLdb or pymysql
 try:
     import MySQLdb
 except ImportError:

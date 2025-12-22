@@ -1,16 +1,16 @@
-from django.core.management.base import BaseCommand
-from gestion.models import Cliente
+from django.core.management.base import BaseCommand 
+from gestion.models import Cliente # Cliente
 
-
+# Comando para migrar nombres de clientes
 class Command(BaseCommand):
     help = 'Divide el campo nombre en nombres y apellidos para clientes existentes.'
-
+    # Maneja la lógica del comando
     def handle(self, *args, **kwargs):
         clientes = Cliente.objects.all()
         count = 0
-
+        # Muestra un mensaje de inicio
         self.stdout.write("Iniciando migración de nombres...")
-
+        # Recorre todos los clientes
         for cliente in clientes:
             full_name = cliente.nombre.strip()
             if not full_name:
