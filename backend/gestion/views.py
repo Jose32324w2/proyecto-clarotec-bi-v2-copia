@@ -61,7 +61,7 @@ class SolicitudCreateAPIView(generics.CreateAPIView):
         input_serializer = self.get_serializer(data=request.data)
         if not input_serializer.is_valid():
             return Response(input_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # orm
+        # orm proteccion automatica para inyeccion sql
         pedido_creado = input_serializer.save()
         output_serializer = PedidoSerializer(pedido_creado, context={'request': request})
         headers = self.get_success_headers(output_serializer.data)

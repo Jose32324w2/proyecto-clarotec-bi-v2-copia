@@ -60,7 +60,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',  # Sesiones
     'corsheaders.middleware.CorsMiddleware',  # CORS
     'django.middleware.common.CommonMiddleware',  # Middleware común
-    'django.middleware.csrf.CsrfViewMiddleware',  # CSRF
+    'django.middleware.csrf.CsrfViewMiddleware',  # CSRF valida que cada petición POST traiga un token único.
     'django.contrib.auth.middleware.AuthenticationMiddleware',  # Autenticación
     'django.contrib.messages.middleware.MessageMiddleware',  # Mensajes
     'django.middleware.clickjacking.XFrameOptionsMiddleware',  # Clickjacking = Secuestro de clics
