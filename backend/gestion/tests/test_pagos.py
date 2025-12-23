@@ -4,16 +4,16 @@ Módulo de Pruebas Integrales: Gestión de Pagos.
 Este módulo verifica los endpoints y la lógica de negocio relacionada con
 la confirmación y validación de pagos de pedidos.
 """
-import pytest # Importa el framework de pruebas
-from decimal import Decimal # Importa el tipo Decimal para manejar números con precisión
-from rest_framework.test import APIClient # Importa el cliente de pruebas de Django Rest Framework
-from rest_framework import status # Importa los códigos de estado HTTP
-from django.urls import reverse # Importa la función para resolver URLs
-from gestion.models import Cliente, Pedido # Importa los modelos de Cliente y Pedido
-from usuarios.models import User, Roles # Importa los modelos de User y Roles
+import pytest  # Importa el framework de pruebas
+from decimal import Decimal  # Importa el tipo Decimal para manejar números con precisión
+from rest_framework.test import APIClient  # Importa el cliente de pruebas de Django Rest Framework
+from rest_framework import status  # Importa los códigos de estado HTTP
+from django.urls import reverse  # Importa la función para resolver URLs
+from gestion.models import Cliente, Pedido  # Importa los modelos de Cliente y Pedido
+from usuarios.models import User, Roles  # Importa los modelos de User y Roles
 
 
-@pytest.mark.django_db # Marca la clase para que se ejecute con la base de datos de pruebas
+@pytest.mark.django_db  # Marca la clase para que se ejecute con la base de datos de pruebas
 class TestPagos:
     # Método de inicialización de datos de prueba
     def setup_method(self):

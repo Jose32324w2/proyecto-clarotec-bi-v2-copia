@@ -12,6 +12,8 @@ from gestion.models import Pedido, Cliente  # Importa los modelos de Pedido y Cl
 from usuarios.models import User, Roles  # Importa los modelos de User y Roles
 
 # Clase de pruebas para las vistas del panel administrativo
+
+
 @pytest.mark.django_db  # Marca la clase para que se ejecute con la base de datos de pruebas
 class TestAdminViews:
     def setup_method(self):

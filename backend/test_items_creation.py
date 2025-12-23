@@ -3,10 +3,10 @@ Script de diagnóstico para probar la creación de ItemsPedido
 Ejecutar con: py manage.py shell < test_items_creation.py
 """
 
-from gestion.models import Cliente, Pedido, ItemsPedido # Importa los modelos
-from django.db import transaction # Importa transaction
+from gestion.models import Cliente, Pedido, ItemsPedido  # Importa los modelos
+from django.db import transaction  # Importa transaction
 
-print("=== INICIO TEST CREACIÓN ITEMS ===") # Imprime mensaje de inicio
+print("=== INICIO TEST CREACIÓN ITEMS ===")  # Imprime mensaje de inicio
 
 # Simular datos de una solicitud
 cliente_data = {

@@ -4,12 +4,12 @@ Módulo de Pruebas Unitarias: Gestión de Pedidos.
 Este módulo verifica la correcta funcionalidad del ciclo de vida de los pedidos
 y la exactitud de los cálculos financieros asociados.
 """
-import pytest # Importa el framework de pruebas
-from decimal import Decimal # Importa el tipo Decimal para manejar números con precisión
-from gestion.models import Cliente, Pedido, ItemsPedido # Importa los modelos de Cliente, Pedido y ItemsPedido
+import pytest  # Importa el framework de pruebas
+from decimal import Decimal  # Importa el tipo Decimal para manejar números con precisión
+from gestion.models import Cliente, Pedido, ItemsPedido  # Importa los modelos de Cliente, Pedido y ItemsPedido
 
 
-@pytest.mark.django_db # Marca la clase para que se ejecute con la base de datos de pruebas
+@pytest.mark.django_db  # Marca la clase para que se ejecute con la base de datos de pruebas
 class TestPedidos:
 
     def test_pedido_state_flow(self):

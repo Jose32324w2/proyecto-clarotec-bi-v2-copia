@@ -11,8 +11,8 @@ MODELOS:
 """
 # backend/usuarios/models.py
 
-from django.db import models # Importa models
-from django.contrib.auth.models import AbstractUser, BaseUserManager # Importa AbstractUser y BaseUserManager
+from django.db import models  # Importa models
+from django.contrib.auth.models import AbstractUser, BaseUserManager  # Importa AbstractUser y BaseUserManager
 
 
 class Roles(models.Model):

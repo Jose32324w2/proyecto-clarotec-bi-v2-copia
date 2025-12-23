@@ -13,47 +13,49 @@ VISTAS PRINCIPALES:
     - BIDashboardDataView: Métricas agregadas para el dashboard de BI.
     - ClientRetentionView: Lógica de retención de clientes (Churn).
 """
-from rest_framework import generics, permissions, status, viewsets # Importa las dependencias
-from decimal import Decimal # Importa Decimal
-from datetime import datetime # Importa datetime
-from django.db.models import Count, Sum, F, Q, Value, CharField # Importa Count, Sum, F, Q, Value, CharField
-from django.db.models.functions import Concat, ExtractYear, ExtractMonth, LPad, Cast # Importa Concat, ExtractYear, ExtractMonth, LPad, Cast
-from rest_framework.response import Response # Importa Response
-from rest_framework.views import APIView # Importa APIView
-from .models import Pedido, ProductoFrecuente, Cliente, ItemsPedido # Importa los modelos
-from .serializers import ( # Importa los serializers
-    SolicitudCreacionSerializer, # Importa SolicitudCreacionSerializer
-    PedidoSerializer, # Importa PedidoSerializer
-    PedidoDetailUpdateSerializer, # Importa PedidoDetailUpdateSerializer
-    PedidoDetailSerializer, # Importa PedidoDetailSerializer
-    ProductoFrecuenteSerializer, # Importa ProductoFrecuenteSerializer
-    ClienteSerializer # Importa ClienteSerializer
+from rest_framework import generics, permissions, status, viewsets  # Importa las dependencias
+from decimal import Decimal  # Importa Decimal
+from datetime import datetime  # Importa datetime
+from django.db.models import Count, Sum, F, Q, Value, CharField  # Importa Count, Sum, F, Q, Value, CharField
+# Importa Concat, ExtractYear, ExtractMonth, LPad, Cast
+from django.db.models.functions import Concat, ExtractYear, ExtractMonth, LPad, Cast
+from rest_framework.response import Response  # Importa Response
+from rest_framework.views import APIView  # Importa APIView
+from .models import Pedido, ProductoFrecuente, Cliente, ItemsPedido  # Importa los modelos
+from .serializers import (  # Importa los serializers
+    SolicitudCreacionSerializer,  # Importa SolicitudCreacionSerializer
+    PedidoSerializer,  # Importa PedidoSerializer
+    PedidoDetailUpdateSerializer,  # Importa PedidoDetailUpdateSerializer
+    PedidoDetailSerializer,  # Importa PedidoDetailSerializer
+    ProductoFrecuenteSerializer,  # Importa ProductoFrecuenteSerializer
+    ClienteSerializer  # Importa ClienteSerializer
 )
-from .permissions import ( # Importa los permisos
-    IsVendedorOrGerencia, # Importa IsVendedorOrGerencia
-    IsAdministrativaOrGerencia, # Importa IsAdministrativaOrGerencia
-    IsDespachadorOrGerencia, # Importa IsDespachadorOrGerencia
-    IsGerencia, # Importa IsGerencia
-    IsStaffMember # Importa IsStaffMember
+from .permissions import (  # Importa los permisos
+    IsVendedorOrGerencia,  # Importa IsVendedorOrGerencia
+    IsAdministrativaOrGerencia,  # Importa IsAdministrativaOrGerencia
+    IsDespachadorOrGerencia,  # Importa IsDespachadorOrGerencia
+    IsGerencia,  # Importa IsGerencia
+    IsStaffMember  # Importa IsStaffMember
 )
-from django.core.mail import send_mail # Importa send_mail
-from django.template.loader import render_to_string # Importa render_to_string
-from django.utils.html import strip_tags # Importa strip_tags
-from django.conf import settings # Importa settings 
-from django.utils import timezone # Importa timezone
-from .services import ShippingCalculator # Importa ShippingCalculator
-from django.http import HttpResponse # Importa HttpResponse
-from xhtml2pdf import pisa # Importa pisa
-from io import BytesIO # Importa BytesIO
+from django.core.mail import send_mail  # Importa send_mail
+from django.template.loader import render_to_string  # Importa render_to_string
+from django.utils.html import strip_tags  # Importa strip_tags
+from django.conf import settings  # Importa settings
+from django.utils import timezone  # Importa timezone
+from .services import ShippingCalculator  # Importa ShippingCalculator
+from django.http import HttpResponse  # Importa HttpResponse
+from xhtml2pdf import pisa  # Importa pisa
+from io import BytesIO  # Importa BytesIO
+
 
 # Clase SolicitudCreateAPIView
-class SolicitudCreateAPIView(generics.CreateAPIView): 
+class SolicitudCreateAPIView(generics.CreateAPIView):
     # queryset es el conjunto de objetos que se van a mostrar
-    queryset = Pedido.objects.all() 
+    queryset = Pedido.objects.all()
     # serializer_class es el serializador que se va a usar
-    serializer_class = SolicitudCreacionSerializer 
+    serializer_class = SolicitudCreacionSerializer
     # permission_classes es el conjunto de permisos que se van a aplicar
-    permission_classes = [permissions.AllowAny] 
+    permission_classes = [permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
         input_serializer = self.get_serializer(data=request.data)
@@ -240,7 +242,8 @@ class EnviarCotizacionAPIView(APIView):
 
             return Response({'error': 'Pedido no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
-# Clase ConfirmarRecepcionView 
+
+# Clase ConfirmarRecepcionView
 class ConfirmarRecepcionView(APIView):
 
     """
@@ -573,7 +576,7 @@ class ConfirmarPagoView(APIView):
 
                 id_seguimiento = str(pedido.id_seguimiento)
                 enlace_portal = f"{settings.FRONTEND_URL}/portal/pedidos/{id_seguimiento}"
-                
+
                 contexto = {
                     'nombre_cliente': pedido.cliente.nombre,
                     'pedido_id': pedido.id,

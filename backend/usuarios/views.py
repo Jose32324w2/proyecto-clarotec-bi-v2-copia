@@ -10,14 +10,14 @@ VISTAS:
 """
 # backend/usuarios/views.py
 
-from rest_framework import permissions, status # Importa permissions y status
-from rest_framework.response import Response # Importa Response
-from rest_framework.views import APIView # Importa APIView
-from django.contrib.auth import get_user_model # Importa get_user_model
-from .serializers import UserSerializer # Importa UserSerializer
-from .models import Roles # Importa Roles
+from rest_framework import permissions, status  # Importa permissions y status
+from rest_framework.response import Response  # Importa Response
+from rest_framework.views import APIView  # Importa APIView
+from django.contrib.auth import get_user_model  # Importa get_user_model
+from .serializers import UserSerializer  # Importa UserSerializer
+from .models import Roles  # Importa Roles
 
-User = get_user_model() # Obtiene el modelo de usuario
+User = get_user_model()  # Obtiene el modelo de usuario
 
 
 class MeView(APIView):
@@ -29,8 +29,8 @@ class MeView(APIView):
         Devuelve la información del usuario que está haciendo la petición.
         'request.user' es poblado automáticamente por DRF después de validar el token.
         """
-        serializer = UserSerializer(request.user) # Serializa el usuario
-        return Response(serializer.data) # Retorna la respuesta
+        serializer = UserSerializer(request.user)  # Serializa el usuario
+        return Response(serializer.data)  # Retorna la respuesta
 
     def patch(self, request):
         """

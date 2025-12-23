@@ -4,15 +4,15 @@ Módulo de Pruebas: Operaciones CRUD (Create, Read, Update, Delete).
 Este módulo verifica la persistencia y manipulación de datos en las entidades
 maestras del sistema (Productos y Clientes) mediante la API REST.
 """
-import pytest # Importa el framework de pruebas
-from rest_framework.test import APIClient # Importa el cliente de pruebas de Django Rest Framework
-from rest_framework import status # Importa los códigos de estado HTTP
-from django.urls import reverse # Importa la función para resolver URLs
-from gestion.models import ProductoFrecuente, Cliente # Importa los modelos de ProductoFrecuente y Cliente
-from usuarios.models import User, Roles # Importa los modelos de User y Roles
+import pytest  # Importa el framework de pruebas
+from rest_framework.test import APIClient  # Importa el cliente de pruebas de Django Rest Framework
+from rest_framework import status  # Importa los códigos de estado HTTP
+from django.urls import reverse  # Importa la función para resolver URLs
+from gestion.models import ProductoFrecuente, Cliente  # Importa los modelos de ProductoFrecuente y Cliente
+from usuarios.models import User, Roles  # Importa los modelos de User y Roles
 
 
-@pytest.mark.django_db # Marca la clase para que se ejecute con la base de datos de pruebas
+@pytest.mark.django_db  # Marca la clase para que se ejecute con la base de datos de pruebas
 class TestCRUD:
     # Método de inicialización de datos de prueba
     def setup_method(self):

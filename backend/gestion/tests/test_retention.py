@@ -4,18 +4,18 @@ Módulo de Pruebas: Estrategias de Retención de Clientes.
 Valida los mecanismos automatizados y manuales para la fidelización
 y recuperación de clientes, incluyendo notificaciones por inactividad.
 """
-import pytest # Importa el framework de pruebas
-from rest_framework.test import APIClient # Importa el cliente de pruebas
-from rest_framework import status # Importa los códigos de estado HTTP
-from django.urls import reverse # Importa la función reverse para obtener URLs
-from django.utils import timezone # Importa el módulo timezone para manejar fechas
-from django.core import mail # Importa el módulo mail para manejar correos electrónicos
-from datetime import timedelta # Importa la clase timedelta para manejar intervalos de tiempo
-from gestion.models import Pedido, Cliente # Importa los modelos de Pedido y Cliente
-from usuarios.models import User, Roles # Importa los modelos de User y Roles
+import pytest  # Importa el framework de pruebas
+from rest_framework.test import APIClient  # Importa el cliente de pruebas
+from rest_framework import status  # Importa los códigos de estado HTTP
+from django.urls import reverse  # Importa la función reverse para obtener URLs
+from django.utils import timezone  # Importa el módulo timezone para manejar fechas
+from django.core import mail  # Importa el módulo mail para manejar correos electrónicos
+from datetime import timedelta  # Importa la clase timedelta para manejar intervalos de tiempo
+from gestion.models import Pedido, Cliente  # Importa los modelos de Pedido y Cliente
+from usuarios.models import User, Roles  # Importa los modelos de User y Roles
 
 
-@pytest.mark.django_db # Marca la clase para que se ejecute con la base de datos de pruebas
+@pytest.mark.django_db  # Marca la clase para que se ejecute con la base de datos de pruebas
 class TestRetention:
     def setup_method(self):
         """

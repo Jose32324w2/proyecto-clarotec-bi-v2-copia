@@ -9,7 +9,8 @@ PERMISOS:
     - IsVendedorOrGerencia: Restringe el acceso a empleados autorizados.
 """
 
-from rest_framework import permissions # Importa el módulo permissions de rest_framework
+from rest_framework import permissions  # Importa el módulo permissions de rest_framework
+
 
 # Defino la clase IsVendedorOrGerencia que hereda de permissions.BasePermission
 class IsVendedorOrGerencia(permissions.BasePermission):
@@ -18,6 +19,7 @@ class IsVendedorOrGerencia(permissions.BasePermission):
     Usado para: Solicitudes y Cotizaciones
     """
     # Implementa el método has_permission que recibe el request y la vista
+
     def has_permission(self, request, view):
         # Si el usuario no está autenticado, no tiene permiso
         if not request.user.is_authenticated:
@@ -28,6 +30,7 @@ class IsVendedorOrGerencia(permissions.BasePermission):
         # Devuelve True si el rol es Vendedor o Gerencia
         return rol in ['Vendedor', 'Gerencia']
 
+
 # Defino la clase IsAdministrativaOrGerencia que hereda de permissions.BasePermission
 class IsAdministrativaOrGerencia(permissions.BasePermission):
     """
@@ -35,6 +38,7 @@ class IsAdministrativaOrGerencia(permissions.BasePermission):
     Usado para: Gestión de Pagos
     """
     # Implementa el método has_permission que recibe el request y la vista
+
     def has_permission(self, request, view):
         # Si el usuario no está autenticado, no tiene permiso
         if not request.user.is_authenticated:
@@ -45,6 +49,7 @@ class IsAdministrativaOrGerencia(permissions.BasePermission):
         # Devuelve True si el rol es Administrativa o Gerencia
         return rol in ['Administrativa', 'Gerencia']
 
+
 # Defino la clase IsDespachadorOrGerencia que hereda de permissions.BasePermission
 class IsDespachadorOrGerencia(permissions.BasePermission):
     """
@@ -52,6 +57,7 @@ class IsDespachadorOrGerencia(permissions.BasePermission):
     Usado para: Gestión de Despachos
     """
     # Implementa el método has_permission que recibe el request y la vista
+
     def has_permission(self, request, view):
         # Si el usuario no está autenticado, no tiene permiso
         if not request.user.is_authenticated:
@@ -61,6 +67,7 @@ class IsDespachadorOrGerencia(permissions.BasePermission):
         rol = request.user.rol.nombre if request.user.rol else None
         return rol in ['Despachador', 'Gerencia']
 
+
 # Defino la clase IsGerencia que hereda de permissions.BasePermission
 class IsGerencia(permissions.BasePermission):
     """
@@ -68,6 +75,7 @@ class IsGerencia(permissions.BasePermission):
     Usado para: BI Dashboard y funciones administrativas
     """
     # Implementa el método has_permission que recibe el request y la vista
+
     def has_permission(self, request, view):
         # Si el usuario no está autenticado, no tiene permiso
         if not request.user.is_authenticated:
@@ -78,6 +86,7 @@ class IsGerencia(permissions.BasePermission):
         # Devuelve True si el rol es Gerencia
         return rol == 'Gerencia'
 
+
 # Defino la clase IsStaffMember que hereda de permissions.BasePermission
 class IsStaffMember(permissions.BasePermission):
     """
@@ -86,6 +95,7 @@ class IsStaffMember(permissions.BasePermission):
     Usado para: Gestión de Clientes, Vistas generales de administración.
     """
     # Implementa el método has_permission que recibe el request y la vista
+
     def has_permission(self, request, view):
         # Si el usuario no está autenticado, no tiene permiso
         if not request.user.is_authenticated:

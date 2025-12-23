@@ -11,17 +11,20 @@ SERIALIZADORES CLAVE:
     - ClienteSerializer: Manejo de datos de clientes.
     - KPI*: Serializadores ligeros para respuestas de Business Intelligence.
 """
-from rest_framework import serializers # Serializadores de datos
-from .models import Cliente, Pedido, ItemsPedido, ProductoFrecuente # Modelos de datos
-from django.db import transaction # Transacciones de base de datos
+from rest_framework import serializers  # Serializadores de datos
+from .models import Cliente, Pedido, ItemsPedido, ProductoFrecuente  # Modelos de datos
+from django.db import transaction  # Transacciones de base de datos
 
 # 1. Serializers independientes (sin dependencias de otros serializers)
 
-# Serializador para ProductoFrecuente   
+# Serializador para ProductoFrecuente
+
+
 class ProductoFrecuenteSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductoFrecuente
         fields = '__all__'
+
 
 # Serializador para ClienteInput
 class ClienteInputSerializer(serializers.Serializer):
@@ -31,6 +34,7 @@ class ClienteInputSerializer(serializers.Serializer):
     empresa = serializers.CharField(max_length=200, required=False, allow_blank=True)
     telefono = serializers.CharField(max_length=50, required=False, allow_blank=True)
 
+
 # Serializador para ItemSolicitudInput
 class ItemSolicitudInputSerializer(serializers.Serializer):
     tipo = serializers.CharField(max_length=20)  # LINK, MANUAL, CATALOGO
@@ -38,6 +42,7 @@ class ItemSolicitudInputSerializer(serializers.Serializer):
     cantidad = serializers.IntegerField(min_value=1)
     referencia = serializers.CharField(required=False, allow_blank=True)
     producto_id = serializers.IntegerField(required=False, allow_null=True)
+
 
 # Serializador para ClienteSerializer
 class ClienteSerializer(serializers.ModelSerializer):
@@ -52,12 +57,14 @@ class ClienteSerializer(serializers.ModelSerializer):
         User = get_user_model()
         return User.objects.filter(email=obj.email).exists()
 
+
 # Serializador para ItemsPedidoSerializer
 class ItemsPedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemsPedido
         fields = ['id', 'descripcion', 'cantidad', 'tipo_origen', 'referencia',
                   'producto_frecuente', 'precio_unitario', 'precio_compra', 'subtotal']
+
 
 # Serializador para ItemsPedidoUpdateSerializer
 class ItemsPedidoUpdateSerializer(serializers.ModelSerializer):
@@ -71,6 +78,7 @@ class ItemsPedidoUpdateSerializer(serializers.ModelSerializer):
         }
 
 # 2. Serializers que dependen de los anteriores
+
 
 # Serializador para SolicitudCreacionSerializer
 class SolicitudCreacionSerializer(serializers.Serializer):
@@ -155,6 +163,7 @@ class SolicitudCreacionSerializer(serializers.Serializer):
             traceback.print_exc()
             raise e
 
+
 # Serializador para PedidoSerializer
 class PedidoSerializer(serializers.ModelSerializer):
     cliente = ClienteSerializer(read_only=True)
@@ -169,6 +178,7 @@ class PedidoSerializer(serializers.ModelSerializer):
             'nombre_transporte_custom', 'opciones_envio', 'items', 'id_seguimiento',
             'total_cotizacion'
         ]
+
 
 # Serializador para PedidoDetailUpdateSerializer
 class PedidoDetailUpdateSerializer(serializers.ModelSerializer):
@@ -230,6 +240,7 @@ class PedidoDetailUpdateSerializer(serializers.ModelSerializer):
                 print(f"Item ID {item_id} no encontrado en items existentes")
 
         return instance
+
 
 # Serializador para PedidoDetailSerializer
 class PedidoDetailSerializer(serializers.ModelSerializer):

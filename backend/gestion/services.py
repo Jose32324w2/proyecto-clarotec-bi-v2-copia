@@ -8,8 +8,10 @@ SERVICIOS:
     - ShippingCalculator: Calcula costos de envío por región/comuna.
 """
 # backend/gestion/services.py
+from django.conf import settings  # noqa
 
-# Clase ShippingCalculator (Calculadora de Envíos) 
+
+# Clase ShippingCalculator (Calculadora de Envíos)
 class ShippingCalculator:
     """
     Servicio para calcular costos de envío estimados basados en zonas geográficas.

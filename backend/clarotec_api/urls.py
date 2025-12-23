@@ -10,17 +10,17 @@ RUTAS PRINCIPALES:
     - /api/token/: Obtención y refresco de tokens JWT (Login).
     - /api/: Rutas principales de la aplicación 'gestion' (Endpoints de negocio).
 """
-# Importaciones de Django y librerías externas 
-from django.contrib import admin # Panel de administración de Django
-from django.urls import path, include # Enrutamiento de URLs
+# Importaciones de Django y librerías externas
+from django.contrib import admin  # Panel de administración de Django
+from django.urls import path, include  # Enrutamiento de URLs
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView, # Obtención de token
-    TokenRefreshView, # Refresco de token
+    TokenObtainPairView,  # Obtención de token
+    TokenRefreshView,  # Refresco de token
 )
-from usuarios.views import MeView, ClientRegisterAPIView, ChangePasswordView # Endpoints de autenticación
+from usuarios.views import MeView, ClientRegisterAPIView, ChangePasswordView  # Endpoints de autenticación
 
 urlpatterns = [
-    path('admin/', admin.site.urls), # Panel de administración de Django
+    path('admin/', admin.site.urls),  # Panel de administración de Django
     # Endpoints de autenticación de Simple JWT
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

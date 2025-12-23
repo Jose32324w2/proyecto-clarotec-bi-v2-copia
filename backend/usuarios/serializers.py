@@ -7,8 +7,8 @@ PROPOSITO:
 """
 # backend/usuarios/serializers.py
 
-from rest_framework import serializers # Importa serializers
-from .models import User, Roles # Importa User y Roles
+from rest_framework import serializers  # Importa serializers
+from .models import User, Roles  # Importa User y Roles
 
 
 class RolSerializer(serializers.ModelSerializer):

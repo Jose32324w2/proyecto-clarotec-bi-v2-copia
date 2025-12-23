@@ -4,19 +4,19 @@ Módulo de Pruebas: Estructura de APIs BI (Business Intelligence).
 Verifica la estructura de datos retornada por los endpoints de KPI, asegurando
 que el frontend reciba las métricas clave esperadas.
 """
-import pytest # Importa el framework de pruebas
-from rest_framework.test import APIClient # Importa el cliente de pruebas de Django Rest Framework
-from rest_framework import status # Importa los códigos de estado HTTP
-from django.urls import reverse # Importa la función para resolver URLs
-from gestion.models import Pedido # Importa el modelo de Pedido
-from usuarios.models import User, Roles # Importa los modelos de User y Roles
+import pytest  # Importa el framework de pruebas
+from rest_framework.test import APIClient  # Importa el cliente de pruebas de Django Rest Framework
+from rest_framework import status  # Importa los códigos de estado HTTP
+from django.urls import reverse  # Importa la función para resolver URLs
+from gestion.models import Pedido  # Importa el modelo de Pedido
+from usuarios.models import User, Roles  # Importa los modelos de User y Roles
 
 
-@pytest.mark.django_db # Marca la clase para que se ejecute con la base de datos de pruebas
+@pytest.mark.django_db  # Marca la clase para que se ejecute con la base de datos de pruebas
 class TestBI:
     # Método de inicialización de datos de prueba
     def setup_method(self):
-        # Inicia el cliente de pruebas API. 
+        # Inicia el cliente de pruebas API.
         self.client = APIClient()
 
         # Asegura que exista el rol 'Gerencia'.

@@ -1,6 +1,5 @@
-from pathlib import Path # Importa la clase Path
-from .settings import *  # Importa todas las configuraciones de settings
-
+from pathlib import Path  # Importa la clase Path
+from .settings import *  # noqa: F403, F401
 
 # Verifica si BASE_DIR está definido en el entorno local
 if 'BASE_DIR' not in locals():

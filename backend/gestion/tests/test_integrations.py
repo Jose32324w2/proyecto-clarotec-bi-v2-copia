@@ -5,16 +5,16 @@ Este módulo valida la interacción del sistema con componentes externos a la ba
 incluyendo la generación de archivos (PDF), envío de correos electrónicos y
 la creación de solicitudes por usuarios no autenticados (público).
 """
-import pytest # Importa el framework de pruebas
-from rest_framework.test import APIClient # Importa el cliente de pruebas de Django Rest Framework
-from rest_framework import status # Importa los códigos de estado HTTP
-from django.urls import reverse # Importa la función para resolver URLs
-from django.core import mail # Importa el módulo de correo electrónico de Django
-from gestion.models import Cliente, Pedido, ItemsPedido # Importa los modelos de Cliente, Pedido y ItemsPedido
-from usuarios.models import User, Roles # Importa los modelos de User y Roles
+import pytest  # Importa el framework de pruebas
+from rest_framework.test import APIClient  # Importa el cliente de pruebas de Django Rest Framework
+from rest_framework import status  # Importa los códigos de estado HTTP
+from django.urls import reverse  # Importa la función para resolver URLs
+from django.core import mail  # Importa el módulo de correo electrónico de Django
+from gestion.models import Cliente, Pedido, ItemsPedido  # Importa los modelos de Cliente, Pedido y ItemsPedido
+from usuarios.models import User, Roles  # Importa los modelos de User y Roles
 
 
-@pytest.mark.django_db # Marca la clase para que se ejecute con la base de datos de pruebas
+@pytest.mark.django_db  # Marca la clase para que se ejecute con la base de datos de pruebas
 class TestIntegrations:
     # Método de inicialización de datos de prueba
     def setup_method(self):
